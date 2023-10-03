@@ -1,0 +1,11 @@
+image: ruby:3.0.3
+test:   
+   stage: test
+   script: 
+      - gem install ceedling
+      - cd test    
+      - ceedling test:all
+   artifacts:
+     paths:
+      - test/build/*
+ 
