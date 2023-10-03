@@ -1,0 +1,21 @@
+version: 2.1
+
+jobs:
+  my-job:
+    docker:
+      - image: cimg/ruby:3.0.3
+    # working_directory: ~/project/test
+    steps:
+      - checkout     
+      - run: sudo apt-get update
+      - run: sudo apt-get -y install build-essential git  ruby-full 
+      - run: ruby --version
+      - run: gem install ceedling
+      - run: ceedling version
+
+      - run: cd test && ceedling test:all
+
+workflows:
+  my-workflow:
+    jobs:
+      - my-job
