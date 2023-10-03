@@ -1,17 +1,26 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://gitlab.com/fbucafusco/lalloc/-/network/master)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/37c027e716c64b5eaa6acad2f3e88186)](https://www.codacy.com?utm_source=gitlab.com&amp;utm_medium=referral&amp;utm_content=fbucafusco/lalloc&amp;utm_campaign=Badge_Grade)
+
 # LALLOC
 
-An ADT that handles a pool of memory as a variable-sized element double linked list. The allocation scheme is not like malloc, where you define the amount of memory the block will have, but it is based on a dual process architecture. The first action is to allocate a block with the maximum size possible. Then, when the user has filled that block, the user must commit that information, specifying the used storage. 
+## Introduction
 
-It allows to add, peek, and delete nodes from a list of variable-sized elements without using any other dynamic allocation routines.
+Lalloc is a C-based library designed for memory allocation management in cases where the number of bytes needed is not known in advance. 
+
+The defines tres basic operations:
+
+- alloc: gives to the user the max amount of unfragmented memory from the pool. (the allocation is started)
+- commit: the user confirms the use of a given number of bytes from it. (the allocation is done)
+- free: frees (the allocation ends)
+
+It allows to add, peek, and delete nodes from a list of variable-sized elements.
 
 ## Features
 
   - Written in C
   - Static or Dynamic allocation of LALLOC instances.
   - Coalescense algorithm to join freed nodes.
-  - Thread safe (the API can be used in a foreback-background architecture or between tasks from a preemptive OS ).
+  - Thread safe (the API can be used in a foreground-background architecture or between tasks from a preemptive OS ).
   - User configurable at compile time.
 
 ## Usage
@@ -44,6 +53,9 @@ lalloc_free_dest ( objname , pool );        //frees the pool.
 ```
 
 ## Why another memory allocation scheme? A little story.
+
+This library was written originally 
+
 
 Originally it was written to implement many instances of an UART driver within a microcontroller.
 
