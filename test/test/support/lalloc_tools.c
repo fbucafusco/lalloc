@@ -68,7 +68,7 @@ void lalloc_measure_framgentation( LALLOC_T *obj, float *sqbase, float *average_
 
         // float mean = ((float)sum) / ((float)n);
 
-        float frag = sqrtf(sum2 ) / sum;
+        float frag = sqrtf( sum2 ) / sum;
         frag = 1 - frag * frag;
 
         *sqbase = 100.0 * frag;

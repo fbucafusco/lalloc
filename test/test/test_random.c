@@ -39,11 +39,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lalloc_abstraction.h"
 
 extern int isr_dis;
-
+extern RNG_HandleTypeDef hrng;
 typedef struct
 {
     char *title;                   // test description
-    uint32_t simulations_count;    //# of simulations
+    uint32_t simulations_count;    // # of simulations
     LALLOC_IDX_TYPE blocksize_min; // min size for each element to be written
     LALLOC_IDX_TYPE blocksize_max; // max size for each element to be written
     LALLOC_IDX_TYPE pool_size;     // memory pool size
@@ -90,7 +90,9 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
     char message[200];
 
     /* randomizo */
-    srand( time( NULL ) );
+    uint32_t rnd;
+    HAL_StatusTypeDef res = HAL_RNG_GenerateRandomNumber( &hrng, &rnd );
+    srand( rnd );
 
     paramsout->num_bytes_written = 0;
     paramsout->num_pool_wrap_arround = 0;
@@ -106,7 +108,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
     lalloc_init( obj );
     TEST_ASSERT_TRUE( isr_dis == 0 );
     /* request memory space */
-    lalloc_alloc( obj, ( void** ) &p_mem, &given_size );
+    lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
     TEST_ASSERT_TRUE( isr_dis == 0 );
     p_mem_last = p_mem;
 
@@ -140,7 +142,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
             paramsout->num_bytes_written += current_charnum;
 
             /* Requesta a ram area */
-            lalloc_alloc( obj, ( void** ) &p_mem, &given_size );
+            lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
         }
 
         TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );

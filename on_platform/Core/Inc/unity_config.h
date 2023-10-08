@@ -139,7 +139,7 @@
  * verbose failure messages for floating point assertions, use this option to
  * give a failure message `"Values Not Within Delta"` and trim the binary size.
  */
-/* #define UNITY_EXCLUDE_FLOAT_PRINT */
+ #define UNITY_EXCLUDE_FLOAT_PRINT
 
 /* If enabled, Unity assumes you want your `FLOAT` asserts to compare standard C
  * floats. If your compiler supports a specialty floating point type, you can
@@ -189,7 +189,7 @@
 /* Define this to enable the unity formatted print macro:
  * "TEST_PRINTF"
  */
-/* #define UNITY_INCLUDE_PRINT_FORMATTED */
+ #define UNITY_INCLUDE_PRINT_FORMATTED
 
 
 /* *************************** TOOLSET CUSTOMIZATION ***************************
@@ -217,7 +217,12 @@
  * `stdout` option. You decide to route your test result output to a custom
  * serial `RS232_putc()` function you wrote like thus:
  */
-/* #define UNITY_OUTPUT_CHAR(a)                    RS232_putc(a) */
+#include "stm32l4xx_hal.h"
+
+#define UNITY_OUTPUT_CHAR(a) extern UART_HandleTypeDef huart1; \
+        (&huart1)->Instance->TDR = (uint8_t) a; \
+        while ((__HAL_UART_GET_FLAG( (&huart1) , UART_FLAG_TXE) ? SET : RESET) == RESET){};
+ //#define UNITY_OUTPUT_CHAR(a)  {extern UART_HandleTypeDef huart1; char aaa=a ; HAL_UART_Transmit(&huart1, (uint8_t*) &aaa, 1, 0xFFFF); }
 /* #define UNITY_OUTPUT_CHAR_HEADER_DECLARATION    RS232_putc(int) */
 /* #define UNITY_OUTPUT_FLUSH()                    RS232_flush() */
 /* #define UNITY_OUTPUT_FLUSH_HEADER_DECLARATION   RS232_flush(void) */

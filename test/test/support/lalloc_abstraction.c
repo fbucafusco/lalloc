@@ -59,7 +59,9 @@ void test_crtical_start( const char *fcn, int line_ )
         char buffer[500];
         sprintf( buffer, "Recursive critical section in %s, line %d", lastfcn, lastline );
         TEST_ASSERT_TRUE_MESSAGE( 0, buffer );
+#ifndef STM32L475xx
         fflush( stdout );
+#endif
     };
     lastline = line_;
     lastfcn = fcn;

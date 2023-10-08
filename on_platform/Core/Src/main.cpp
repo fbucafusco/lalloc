@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "unity.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -25,6 +26,9 @@
 extern "C" {
 #endif
 void test_lalloc_1();
+void test_random_1();
+void test_random_2();
+void test_random_3();
 
 #ifdef __cplusplus
 }
@@ -34,7 +38,20 @@ void test_lalloc_1();
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+#define RUN_TEST(TestFunc, TestLineNum) \
+{ \
+  Unity.CurrentTestName = #TestFunc; \
+  Unity.CurrentTestLineNumber = TestLineNum; \
+  Unity.NumberOfTests++; \
+  if (TEST_PROTECT()) \
+  { \
+      TestFunc(); \
+  } \
+  if (TEST_PROTECT()) \
+  { \
+  } \
+  UnityConcludeTest(); \
+}
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -49,18 +66,12 @@ void test_lalloc_1();
 
 /* Private variables ---------------------------------------------------------*/
 DFSDM_Channel_HandleTypeDef hdfsdm1_channel1;
-
 I2C_HandleTypeDef hi2c2;
-
 QSPI_HandleTypeDef hqspi;
-
 RNG_HandleTypeDef hrng;
-
 SPI_HandleTypeDef hspi3;
-
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
-
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
@@ -136,8 +147,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  test_lalloc_1();
     /* USER CODE BEGIN 3 */
+	RUN_TEST( test_lalloc_1 , __LINE__);
+	RUN_TEST( test_random_1 , __LINE__);
+	RUN_TEST( test_random_2 , __LINE__);
+	RUN_TEST( test_random_3 , __LINE__);
   }
   /* USER CODE END 3 */
 }

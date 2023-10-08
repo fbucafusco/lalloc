@@ -36,12 +36,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "lalloc.h"
 
 #define DEPRECATED
 
 /* ==PRIVATE MACROS==CONFIGURATION===================================================================== */
- 
+
 /**
    @brief LALLOC_FREE_ANY
           Defines the behavior of lalloc_free.
@@ -68,7 +72,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LALLOC_MIN_PAYLOAD_SIZE
 #define LALLOC_MIN_PAYLOAD_SIZE             0
 #endif
- 
+
 /* FOR TESTING PURPOSES */
 #ifndef LALLOC_VALIDATE_INDEX
 #define LALLOC_VALIDATE_INDEX(IDX)
@@ -76,6 +80,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 /* ==PRIVATE MACROS==CONDITIONAL===================================================================== */
+
+
 #ifndef LALLOC_CRITICAL_START
 #define LALLOC_CRITICAL_START
 #endif
@@ -83,6 +89,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LALLOC_CRITICAL_END
 #define LALLOC_CRITICAL_END
 #endif
+
 
 /* ==PRIVATE MACROS==FUNCTIONAL====================================================================== */
 #ifdef LALLOC_TEST
@@ -155,3 +162,7 @@ void _block_list_get_n ( uint8_t* pool, LALLOC_IDX_TYPE list_idx,  LALLOC_IDX_TY
 LALLOC_IDX_TYPE _block_list_remove ( uint8_t* pool, LALLOC_IDX_TYPE* block_idx );
 void _block_set( uint8_t* pool, LALLOC_IDX_TYPE idx, LALLOC_IDX_TYPE size, LALLOC_IDX_TYPE next, LALLOC_IDX_TYPE prev, LALLOC_IDX_TYPE flags );
 LALLOC_IDX_TYPE _block_remove( uint8_t *pool, LALLOC_IDX_TYPE *idx );
+
+#ifdef __cplusplus
+}
+#endif

@@ -47,10 +47,15 @@ extern "C" {
 #define LALLOC_VERSION                      0.10
 
 /* DEFAULT VALUES: can be changed in  lalloc_config.h =========================================================================== */
+
+
+#ifndef LALLOC_ASSERT
+#define LALLOC_ASSERT(a)
+#endif
+
 /**
    @brief it defines the alignment required to access the data.
-          e.g 1 -> the first byte of any block will be aligned with an address multiple with LALLOC_ALIGNMENT==1
-              2 -> the first byte of any block will be aligned with an even address
+          e.g 1 -> the first byte of any block will be aligned with an address multiple with LALLOC_ALIGNMENT
  */
 #ifndef LALLOC_ALIGNMENT
 #define LALLOC_ALIGNMENT                    4
@@ -76,7 +81,8 @@ extern "C" {
 
 /**
    @brief   If lalloc_config.h defines LALLOC_CRITICAL_START, LALLOC_CRITICAL_END
-            LALLOC_THREAD_SAFE is defined as 2, meaning that the critical section mechanism will be based on other mechanism than mutex ( disable/enable isr, e.g. )            
+            LALLOC_THREAD_SAFE is defined as 2, meaning that the critical section mechanism will be based on other mechanism than mutex ( disable/enable isr, e.g. )
+            In this case, the RAM footprint will include the mutex object handle.
  */
 #if defined(LALLOC_CRITICAL_START) && defined(LALLOC_CRITICAL_END)
 #define LALLOC_THREAD_SAFE      2
@@ -102,7 +108,7 @@ extern "C" {
 #define LALLOC_NO_FLAGS                     0
 
 /**
-   @brief   Based on LALLOC_MAX_BYTES it defines the data type for the indexing of bytes and blocks (LALLOC_IDX_TYPE)
+   @brief   Based on LALLOC_MAX_BYTES it defines the data type for the indexing of bytes and blocks
  */
 #if defined(LALLOC_MAX_BYTES) && !defined(LALLOC_IDX_TYPE)
 #if( LALLOC_MAX_BYTES<=0xFF )
@@ -116,13 +122,16 @@ extern "C" {
 
 /**
    @brief General macros for adjusting sizes and addresses
-*/
+    */
 #if LALLOC_ALIGN_BOUNDRIES==1
-#define LALLOC_ALIGN_ROUND_UP_(TYPE,SIZE,ALIGNMENT)    ( (((SIZE)+ (ALIGNMENT) - 1)>LALLOC_IDX_INVALID )?LALLOC_IDX_INVALID : (   ( TYPE ) ( ( (SIZE) + (ALIGNMENT) - 1 ) & ~(  ( TYPE )  (ALIGNMENT) - 1 ) ) ) )
+#define LALLOC_ALIGN_ROUND_UP_(TYPE,SIZE,ALIGNMENT)    (   ( TYPE ) ( (SIZE) + (  ( TYPE )   ( (ALIGNMENT) - 1 ) ) ) & ~(  ( TYPE )  (ALIGNMENT) - 1 ))
 #define LALLOC_ALIGN_ROUND_UP(SIZE)                    LALLOC_ALIGN_ROUND_UP_( LALLOC_IDX_TYPE , SIZE , LALLOC_ALIGNMENT )
 #else
-#define LALLOC_ALIGN_ROUND_UP(SIZE)     (SIZE)
+#define LALLOC_ALIGN_ROUND_UP(SIZE)          (SIZE)
 #endif
+
+
+
 
 /**
    @brief strcuture for each node's block
@@ -145,7 +154,7 @@ typedef struct
 #define LALLOC_IDX_INVALID              ((LALLOC_IDX_TYPE)(~((LALLOC_IDX_TYPE)0)))
 // #define LALLOC_BYTE_INVALID             ((uint8_t)(~((uint8_t)0)))
 
- 
+
 #if LALLOC_ALIGNMENT==1
 #define LALLOC_POOL_TYPE                uint8_t
 #elif LALLOC_ALIGNMENT==2
@@ -219,12 +228,11 @@ typedef struct
 #define ASSERT_CONCAT(a, b) ASSERT_CONCAT_(a, b)
 #define ct_assert(e) enum { ASSERT_CONCAT(assert_line_, __LINE__) = 1/(!!(e)) }
 
-
 /**
    @brief declares a constant object
  */
-#define LALLOC_DECLARE(NAME,SIZE, BEHAV )   lalloc_dyn_t  NAME##_Data;                                      \
-                                            LALLOC_POOL_TYPE NAME##_pool[LALLOC_ADJUST_SIZE_WITH_MASK(SIZE) / LALLOC_ALIGNMENT ];        \
+#define LALLOC_DECLARE(NAME,SIZE, BEHAV )   lalloc_dyn_t      NAME##_Data;                                      \
+		                                    LALLOC_POOL_TYPE  NAME##_pool[LALLOC_ADJUST_SIZE_WITH_MASK(SIZE) / LALLOC_ALIGNMENT ];        \
                                             lalloc_t LALLOC_ROM_ATTRIBUTES NAME =                           \
                                             {                                                               \
                                                 .pool     = (uint8_t*) NAME##_pool,                         \

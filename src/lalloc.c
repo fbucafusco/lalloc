@@ -34,8 +34,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lalloc.h"
 #include "lalloc_priv.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_block_size = LALLOC_NODE_HEAD_SIZE;
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_b_overhead_size = LALLOC_NODE_HEAD_SIZE;
+
+
+/*
+TODO: NEXT PHYSICAL CAN BE CALCULATED IN RUNTIME SO, I THINK I BETTER TO REMOVE IR FROM THE HEADER
+       PREV PHY CANNOT .
+*/
+
 
 /* ==PRIVATE METHODS================================================================================= */
 /* sets the block information at the selected pool and block index. */
@@ -127,7 +138,6 @@ LALLOC_IDX_TYPE _block_remove( uint8_t *pool, LALLOC_IDX_TYPE *idx )
 */
 LALLOC_IDX_TYPE _block_list_find_by_idx( uint8_t *pool, LALLOC_IDX_TYPE list, LALLOC_IDX_TYPE idx )
 {
-
     LALLOC_IDX_TYPE size;
     LALLOC_IDX_TYPE next = list;
 
@@ -572,16 +582,16 @@ int _block_move_from_alloc_to_free( LALLOC_T *obj, void *addr )
  */
 void *lalloc_ctor( LALLOC_IDX_TYPE size )
 {
-    lalloc_t *rv = malloc( sizeof( lalloc_t ) );
+    lalloc_t *rv = ( lalloc_t * ) malloc( sizeof( lalloc_t ) );
 
     if ( rv != NULL )
     {
         rv->size = LALLOC_ADJUST_SIZE_WITH_MASK( size );
-        rv->pool = malloc( rv->size ); //TODO: how to instruct malloc to return an aligned memory?
+        rv->pool = ( uint8_t * ) malloc( rv->size ); //TODO: how to instruct malloc to return an aligned memory?
 
         if ( rv->pool != NULL )
         {
-            rv->dyn = malloc( sizeof( lalloc_dyn_t ) );
+            rv->dyn = ( lalloc_dyn_t* ) malloc( sizeof( lalloc_dyn_t ) );
 
             if ( rv->dyn != NULL )
             {
@@ -608,13 +618,11 @@ void *lalloc_ctor( LALLOC_IDX_TYPE size )
     return rv;
 }
 
-void lalloc_dtor( void *this_ )
+void lalloc_dtor( void *me )
 {
-    lalloc_t *this = this_;
-
-    free( this->dyn );
-    free( this->pool );
-    free( this );
+    free( ( ( lalloc_t* ) me )->dyn );
+    free( ( ( lalloc_t* ) me )->pool );
+    free( ( ( lalloc_t* ) me ) );
 }
 
 /* ==PUBLIC METHODS================================================================================== */
@@ -773,8 +781,6 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
                 */
 
                 LALLOC_IDX_TYPE new_block_size = node_size - size;
-                LALLOC_ASSERT( new_block_size < obj->size );
-                LALLOC_ASSERT( new_block_size < node_size ); // TODO review assertion
 
                 if ( new_block_size < lalloc_b_overhead_size + LALLOC_MIN_PAYLOAD_SIZE )
                 {
@@ -810,6 +816,7 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
                         LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL( obj->pool, next_physical, new_node_idx );
                     }
 
+                    /* This operation only make sense if the user must to alloc then free nodes before commiting the allocated space. */
                     new_node_idx = _block_join_adjacent( obj, new_node_idx );
 
                     /* add the node to free list */
@@ -1041,4 +1048,8 @@ void lalloc_get_n( LALLOC_T *obj, void **addr, LALLOC_IDX_TYPE *size, LALLOC_IDX
     LALLOC_CRITICAL_END;
 }
 
+
+#ifdef __cplusplus
+}
+#endif
 /* v0.10 */
