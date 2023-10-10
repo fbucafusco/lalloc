@@ -32,7 +32,6 @@ void mem_din_set( void ( *malloc_fcn )( size_t size ),void free_fcn( void *ptr )
     {
         real_free = dlsym( RTLD_NEXT, "free" );
     }
-
 }
 
 void *malloc( size_t size )

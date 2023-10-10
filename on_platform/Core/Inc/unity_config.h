@@ -71,11 +71,11 @@
  * you are going to specify if you don't like the defaults.
  **************************************************************************** */
 
- /* Define this to be the number of bits an `int` takes up on your system. The
- * default, if not auto-detected, is 32 bits.
- *
- * Example:
- */
+/* Define this to be the number of bits an `int` takes up on your system. The
+* default, if not auto-detected, is 32 bits.
+*
+* Example:
+*/
 /* #define UNITY_INT_WIDTH 16 */
 
 /* Define this to be the number of bits a `long` takes up on your system. The
@@ -115,11 +115,11 @@
  * the only option.
  **************************************************************************** */
 
- /* By default, Unity guesses that you will want single precision floating point
-  * support, but not double precision. It's easy to change either of these using
-  * the include and exclude options here. You may include neither, just float,
-  * or both, as suits your needs.
-  */
+/* By default, Unity guesses that you will want single precision floating point
+ * support, but not double precision. It's easy to change either of these using
+ * the include and exclude options here. You may include neither, just float,
+ * or both, as suits your needs.
+ */
 /* #define UNITY_EXCLUDE_FLOAT  */
 /* #define UNITY_INCLUDE_DOUBLE */
 /* #define UNITY_EXCLUDE_DOUBLE */
@@ -139,7 +139,7 @@
  * verbose failure messages for floating point assertions, use this option to
  * give a failure message `"Values Not Within Delta"` and trim the binary size.
  */
- #define UNITY_EXCLUDE_FLOAT_PRINT
+#define UNITY_EXCLUDE_FLOAT_PRINT
 
 /* If enabled, Unity assumes you want your `FLOAT` asserts to compare standard C
  * floats. If your compiler supports a specialty floating point type, you can
@@ -189,7 +189,7 @@
 /* Define this to enable the unity formatted print macro:
  * "TEST_PRINTF"
  */
- #define UNITY_INCLUDE_PRINT_FORMATTED
+#define UNITY_INCLUDE_PRINT_FORMATTED
 
 
 /* *************************** TOOLSET CUSTOMIZATION ***************************
@@ -222,7 +222,7 @@
 #define UNITY_OUTPUT_CHAR(a) extern UART_HandleTypeDef huart1; \
         (&huart1)->Instance->TDR = (uint8_t) a; \
         while ((__HAL_UART_GET_FLAG( (&huart1) , UART_FLAG_TXE) ? SET : RESET) == RESET){};
- //#define UNITY_OUTPUT_CHAR(a)  {extern UART_HandleTypeDef huart1; char aaa=a ; HAL_UART_Transmit(&huart1, (uint8_t*) &aaa, 1, 0xFFFF); }
+//#define UNITY_OUTPUT_CHAR(a)  {extern UART_HandleTypeDef huart1; char aaa=a ; HAL_UART_Transmit(&huart1, (uint8_t*) &aaa, 1, 0xFFFF); }
 /* #define UNITY_OUTPUT_CHAR_HEADER_DECLARATION    RS232_putc(int) */
 /* #define UNITY_OUTPUT_FLUSH()                    RS232_flush() */
 /* #define UNITY_OUTPUT_FLUSH_HEADER_DECLARATION   RS232_flush(void) */
@@ -244,6 +244,7 @@
  *
  * TEST - PASS (10 ms)
  */
-/* #define UNITY_INCLUDE_EXEC_TIME */
+#define UNITY_INCLUDE_EXEC_TIME 
+#define UNITY_CLOCK_MS() (HAL_GetTick())
 
 #endif /* UNITY_CONFIG_H */

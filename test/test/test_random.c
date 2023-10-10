@@ -252,3 +252,23 @@ void test_random_3()
 
     random_test( &test_alloc, &params_in, &paramsout );
 }
+
+void test_random()
+{
+    int i;
+    uint8_t *data;
+    LALLOC_IDX_TYPE size;
+
+    tTestParams_In params_in;
+    tTestParams_Out paramsout;
+
+    params_in.pool_size = uint32_random_range( 32768 , 65535 );
+    params_in.simulations_count = 50000;
+    params_in.blocksize_min = 1;
+    params_in.blocksize_max = uint32_random_range( params_in.blocksize_min , params_in.pool_size );
+    params_in.title = ( char * )__FUNCTION__;
+
+    LALLOC_DECLARE( test_alloc, params_in.pool_size, 0 );
+
+    random_test( &test_alloc, &params_in, &paramsout );
+}

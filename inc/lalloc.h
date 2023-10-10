@@ -131,10 +131,8 @@ extern "C" {
 #endif
 
 
-
-
 /**
-   @brief strcuture for each node's block
+   @brief structure for each node's block
  */
 #pragma pack(1)
 typedef struct

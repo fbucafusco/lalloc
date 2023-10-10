@@ -56,10 +56,18 @@ void test_lalloc_1()
     char text4[] = "santaclaritadiet"; // 16
     char text5[] = "uh";               // 2
 
-    char *text_arr[5] = {text1, text2, text3, text4, text5};
+    char * text_arr[5] = {text1, text2, text3, text4, text5};
+    size_t size_arr[5] = {sizeof(text1)-1 , sizeof(text2)-1 , sizeof(text3)-1, sizeof(text4)-1 , sizeof(text5)-1};
     uint8_t *addresses[5];
 
-    LALLOC_DECLARE( test_alloc, 100, 0 );
+    size_t pool_size = 0;
+
+    for ( i = 0; i < 5; i++ )
+    {
+    	pool_size += LALLOC_ALIGN_ROUND_UP(size_arr[i]) + LALLOC_NODE_HEAD_SIZE;
+    }
+
+    LALLOC_DECLARE( test_alloc, pool_size, 0 );
 
     lalloc_init( &test_alloc );
 
@@ -68,7 +76,7 @@ void test_lalloc_1()
     {
         lalloc_alloc( &test_alloc, ( void ** )&addresses[i], &size );
 
-        memcpy( addresses[i], text_arr[i], strlen( text_arr[i] ) );
+        memcpy( addresses[i], text_arr[i],   size_arr[i]  );
 
         lalloc_commit( &test_alloc, strlen( text_arr[i] ) );
     }
@@ -95,7 +103,7 @@ void test_lalloc_1()
      * During the lastest operations there were removed the "middle nodes"  so there must be a middle node "joined". Just 1 */
     _block_list_get_n( test_alloc.pool, test_alloc.dyn->flist, 0, &data, &size );
 
-    TEST_ASSERT_EQUAL( strlen( text3 ) + strlen( text4 ) + lalloc_b_overhead_size, size );
+    TEST_ASSERT_EQUAL( LALLOC_ALIGN_ROUND_UP(strlen( text3 ) + strlen( text4 ) + lalloc_b_overhead_size), size );
 
     _block_list_get_n( test_alloc.pool, test_alloc.dyn->flist, 1, &data, &size );
     TEST_ASSERT_NULL( data );
