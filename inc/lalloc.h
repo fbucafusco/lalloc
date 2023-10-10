@@ -137,11 +137,11 @@ extern "C" {
 #pragma pack(1)
 typedef struct
 {
-    LALLOC_IDX_TYPE prev;       /* Logical index to the previous block in the list          */
-    LALLOC_IDX_TYPE next;       /* Logical index to the next block in the list              */
+    LALLOC_IDX_TYPE prev;       /* Logical index to the previous block in the list     */
+    LALLOC_IDX_TYPE next;       /* Logical index to the next block in the list         */
     LALLOC_IDX_TYPE prev_phys;  /* Physical index to the previous block in the pool    */
     LALLOC_IDX_TYPE next_phys;  /* Physical index to the next block in the pool        */
-    LALLOC_IDX_TYPE blk_size;   /* playload block's size                                    */
+    LALLOC_IDX_TYPE blk_size;   /* playload block's size                               */
 } lalloc_block_t;
 #pragma pack()
 
@@ -187,21 +187,21 @@ typedef struct
 /* STRUCTURES ============================================================================================================ */
 typedef struct
 {
-    LALLOC_IDX_TYPE flist;              //TODO TRANSLATE indice (en bytes) al primer bloque que se liberará (1er byte del  header). Apunta al bloque que mas tamaño posee.
-    LALLOC_IDX_TYPE alist;              //TODO TRANSLATE indice (en bytes) al primer bloque que se dará     (1er byte del header)
-    LALLOC_IDX_TYPE alloc_block;        //TODO TRANSLATE TODO:REVIEW se puede calcular el allocated block mirando flist si tuene el bit de free o no.
-    LALLOC_IDX_TYPE allocated_blocks;   //TODO TRANSLATE allocated block count. It avoid to move through the alist elemtns.
+    LALLOC_IDX_TYPE flist;              // Index (in bytes) to the first block to be freed (1st byte of the header). Points to the block with the largest size.
+    LALLOC_IDX_TYPE alist;              // Index (in bytes) to the first block to be allocated (1st byte of the header).
+    LALLOC_IDX_TYPE alloc_block;        // Allocated block, which can be calculated by looking at flist to see if it has the "free" bit or not.
+    LALLOC_IDX_TYPE allocated_blocks;   // Count of allocated blocks. It avoids having to iterate through the alist elements.
 
 #if LALLOC_THREAD_SAFE==1
-    LALLOC_MUTEX_TYPE mutex;
+    LALLOC_MUTEX_TYPE mutex;            // Mutex to ensure thread safety, if enabled.
 #endif
 } lalloc_dyn_t;
 
 typedef struct
 {
-    uint8_t*            pool;       //TODO TRANSLATE apunta a la zona de memoria RAM en donde se almacenar�n los datos
-    LALLOC_IDX_TYPE     size;       //TODO TRANSLATE tamaño de la zona de memoria que apunta pool
-    lalloc_dyn_t*       dyn;        //TODO TRANSLATE puntero a zona en ram para almacenar las variables dinamicas de la cola
+    uint8_t*            pool;       // Points to the RAM memory area where data will be stored.
+    LALLOC_IDX_TYPE     size;       // Size of the memory area pointed to by "pool."
+    lalloc_dyn_t*       dyn;        // Pointer to the RAM area to store dynamic variables of the queue.
 } lalloc_t;
 
 /* FUNCTIONAL MACROS ===================================================================================================== */
@@ -221,7 +221,6 @@ typedef struct
 #define LALLOC_T LALLOC_CONST_OBJ_ATTRIBUTES lalloc_t
 #endif
 
-
 #define ASSERT_CONCAT_(a, b) a##b
 #define ASSERT_CONCAT(a, b) ASSERT_CONCAT_(a, b)
 #define ct_assert(e) enum { ASSERT_CONCAT(assert_line_, __LINE__) = 1/(!!(e)) }
@@ -229,8 +228,8 @@ typedef struct
 /**
    @brief declares a constant object
  */
-#define LALLOC_DECLARE(NAME,SIZE, BEHAV )   lalloc_dyn_t      NAME##_Data;                                      \
-		                                    LALLOC_POOL_TYPE  NAME##_pool[LALLOC_ADJUST_SIZE_WITH_MASK(SIZE) / LALLOC_ALIGNMENT ];        \
+#define LALLOC_DECLARE(NAME,SIZE, BEHAV )   lalloc_dyn_t      NAME##_Data;                                                          \
+		                                      LALLOC_POOL_TYPE  NAME##_pool[LALLOC_ADJUST_SIZE_WITH_MASK(SIZE) / LALLOC_ALIGNMENT ];  \
                                             lalloc_t LALLOC_ROM_ATTRIBUTES NAME =                           \
                                             {                                                               \
                                                 .pool     = (uint8_t*) NAME##_pool,                         \
