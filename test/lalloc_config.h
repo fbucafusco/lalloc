@@ -5,8 +5,8 @@
 #include "lalloc_abstraction.h"
 
 
-#define LALLOC_ALIGNMENT                1
-#define LALLOC_MAX_BYTES                0xFFFF
+#define LALLOC_ALIGNMENT               1
+#define LALLOC_MAX_BYTES               0xFFFF // 0xFFFFFFFF
 
 /* ====================================================================================
     LALLOC_USE_OS

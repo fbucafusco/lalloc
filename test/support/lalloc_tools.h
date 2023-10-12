@@ -5,7 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+LALLOC_IDX_TYPE lalloc_print_graph(LALLOC_T *obj, char last,  uint32_t scale);
 
 LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T * obj ) ;
 

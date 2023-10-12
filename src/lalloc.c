@@ -41,12 +41,10 @@ extern "C" {
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_block_size = LALLOC_NODE_HEAD_SIZE;
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_b_overhead_size = LALLOC_NODE_HEAD_SIZE;
 
-
 /*
 TODO: NEXT PHYSICAL CAN BE CALCULATED IN RUNTIME SO, I THINK I BETTER TO REMOVE IR FROM THE HEADER
        PREV PHY CANNOT .
 */
-
 
 /* ==PRIVATE METHODS================================================================================= */
 /* sets the block information at the selected pool and block index. */
@@ -54,7 +52,7 @@ void _block_set( uint8_t *pool, LALLOC_IDX_TYPE idx, LALLOC_IDX_TYPE size, LALLO
 {
     LALLOC_SET_BLOCK_NEXT_FROMPOOL_( pool, idx, next );
     LALLOC_SET_BLOCK_PREV_FROMPOOL_( pool, idx, prev );
-    LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL_( pool, idx, LALLOC_IDX_INVALID );
+    //LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL_( pool, idx, LALLOC_IDX_INVALID );
     LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL_( pool, idx, LALLOC_IDX_INVALID );
     LALLOC_SET_BLOCK_SIZE_FROMPOOL_( pool, idx, size | flags );
 }
@@ -468,6 +466,28 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE new_node )
     */
 
     /* check left */
+    //extra checks
+    if ( prev_phy < LALLOC_IDX_INVALID && prev_phy>=obj->size )
+    {
+        printf("ERROR: prev phy is out of bounds\n");
+    }
+    #if 0
+    if ( prev_phy  == obj->dyn->alloc_block && prev_phy!=LALLOC_IDX_INVALID )
+    {
+        printf("INFO: prev phy is the alloc block\n");
+        LALLOC_GET_BLOCK_SIZE_FROMPOOL( obj->pool, prev_phy, size );
+        if ( size & LALLOC_FREE_NODE_MASK )
+        {
+            printf("INFO: prev phy is free\n");
+        }
+        else
+        {
+            printf("INFO: prev phy is not free\n");
+        }
+    }
+    #endif
+
+
     if ( prev_phy != LALLOC_IDX_INVALID )
     {
         /* temp is the previous physical block */
@@ -476,6 +496,8 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE new_node )
 
         if ( size & LALLOC_FREE_NODE_MASK )
         {
+           // printf("INFO: join left\n");
+
             /* temp is the previous physical free block */
 
             /* THE PREVIOUS PHYSCAL NODE IS FREE. */
@@ -497,6 +519,28 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE new_node )
         LALLOC_ASSERT( new_node == 0 );
     }
 
+
+ //extra checks
+    if ( next_phy < LALLOC_IDX_INVALID && next_phy>obj->size )
+    {
+        printf("ERROR: next_phy is out of bounds\n");
+    }
+    #if 0
+     if ( next_phy  == obj->dyn->alloc_block  && next_phy!=LALLOC_IDX_INVALID )
+    {
+        printf("INFO: next_phy is the alloc block\n");
+        LALLOC_GET_BLOCK_SIZE_FROMPOOL( obj->pool, next_phy, size );
+        if ( size & LALLOC_FREE_NODE_MASK )
+        {
+            printf("INFO: next_phy is free\n");
+        }
+        else
+        {
+            printf("INFO: next_phy is not free\n");
+        }
+    }
+    #endif
+
     /* the new block is already defined, so we set the previous phy block to it */
     // LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL( obj->pool, new_node, prev_phy );          /* REMOVED OPERATION REDUNDANT */
 
@@ -508,6 +552,8 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE new_node )
 
         if ( size & LALLOC_FREE_NODE_MASK )
         {
+         //   printf("INFO: join right\n");
+
             /* THE NEXT PHYSCAL NODE IS FREE. */
             /* remove the prev node from the list  */
             temp = _block_list_remove_block( obj->pool, &( obj->dyn->flist ), next_phy );
@@ -531,7 +577,7 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE new_node )
         LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL( obj->pool, next_phy, new_node );
     }
 
-    LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, new_node, next_phy );
+   // LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, new_node, next_phy );
 
     LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, new_node, ( next_phy - new_node - lalloc_b_overhead_size ) | LALLOC_FREE_NODE_MASK );
 
@@ -587,7 +633,8 @@ void *lalloc_ctor( LALLOC_IDX_TYPE size )
     if ( rv != NULL )
     {
         rv->size = LALLOC_ADJUST_SIZE_WITH_MASK( size );
-        rv->pool = ( uint8_t * ) malloc( rv->size ); //TODO: how to instruct malloc to return an aligned memory?
+        rv->pool = ( uint8_t * ) malloc(  rv->size );  
+        // rv->pool = ( uint8_t * ) aligned_alloc( LALLOC_ALIGNMENT , rv->size );  
 
         if ( rv->pool != NULL )
         {
@@ -645,10 +692,10 @@ void lalloc_clear( LALLOC_T *obj )
     obj->dyn->allocated_blocks = 0;
 
     /* initialice the only free node available (flist) */
-    LALLOC_SET_BLOCK_NEXT_FROMPOOL( obj->pool, 0, 0 );
-    LALLOC_SET_BLOCK_PREV_FROMPOOL( obj->pool, 0, 0 );
-    LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, 0, obj->size );
-    LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL( obj->pool, 0, LALLOC_IDX_INVALID );
+    LALLOC_SET_BLOCK_NEXT_FROMPOOL( obj->pool,     obj->dyn->flist ,     obj->dyn->flist );
+    LALLOC_SET_BLOCK_PREV_FROMPOOL( obj->pool,     obj->dyn->flist ,     obj->dyn->flist );
+  //  LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, 0, obj->size );
+    LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL( obj->pool,     obj->dyn->flist , LALLOC_IDX_INVALID );
 
     LALLOC_IDX_TYPE block_size = obj->size - lalloc_b_overhead_size;
 
@@ -762,16 +809,7 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
 
             if ( size <= node_size )
             {
-                /* removes the first node in the free list and modify flist to point to the next larger block */
-                removed = _block_list_remove_block( obj->pool, &( obj->dyn->flist ), obj->dyn->alloc_block );
-
-                /* set the new size of the node with the provided size*/
-                LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, removed, size );
-
-                /* add the node to allocated list */
-                _block_list_add_first( obj->pool, &( obj->dyn->alist ), removed );
-
-                /* resolve fake bounds or new free node */
+                bool split_nodes    = false;
 
                 /* calculation of the new node position
                 |<-- size ------>|              |
@@ -781,13 +819,29 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
                 */
 
                 LALLOC_IDX_TYPE new_block_size = node_size - size;
+             
+                /* removes the first node in the free list and modify flist to point to the next larger block */
+                removed = _block_list_remove_block( obj->pool, &( obj->dyn->flist ), obj->dyn->alloc_block );
 
                 if ( new_block_size < lalloc_b_overhead_size + LALLOC_MIN_PAYLOAD_SIZE )
                 {
-                    /* in this case there is no way of doing a node splitting. */
-                    /* the removed node do not change the nex/prev physical */
+                    /* the block wont be splitted */
+                    size = node_size;
                 }
                 else
+                {
+                    split_nodes = true;                    
+                }
+
+                /* set the new size of the node with the provided size*/
+                LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, removed, size );
+
+                /* add the node to allocated list */
+                _block_list_add_first( obj->pool, &( obj->dyn->alist ), removed );
+
+                /* resolve fake bounds or new free node */
+
+                if ( split_nodes )              
                 {
                     /* the bignode must be splitted */
                     LALLOC_IDX_TYPE new_node_idx = removed + size + lalloc_b_overhead_size;
@@ -798,17 +852,17 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
                     /* sets the size of the commited block */
                     LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, new_node_idx, new_block_size | LALLOC_FREE_NODE_MASK );
 
-                    /* get the next/Prev Physical */
-                    LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, removed, next_physical );
+                    /* next physical to the new node */
+                    LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, new_node_idx, next_physical );
 
                     /* set the next phy to the removed block */
-                    LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, removed, new_node_idx );
+                //    LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, removed, new_node_idx );
 
                     /* set the previous phy to the new block */
                     LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL( obj->pool, new_node_idx, removed );
 
                     /* set the next phy to the new block */
-                    LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, new_node_idx, next_physical );
+                  //  LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, new_node_idx, next_physical );
 
                     if ( next_physical != obj->size )
                     {
@@ -928,11 +982,8 @@ bool lalloc_free( LALLOC_T *obj, void *addr )
     if ( in_global_range )
     {
         LALLOC_CRITICAL_START;
-
-
         //TODO OPTIMIZATION FOR #if LALLOC_ALLOW_QUEUED_FREES==1 AND FREE ANY COMBINATIONS. ALIST IS NOT NEEDED IN SOME CASES.
         rv = _block_move_from_alloc_to_free( obj, addr );
-
         LALLOC_CRITICAL_END;
     }
     else

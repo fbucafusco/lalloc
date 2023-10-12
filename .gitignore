@@ -2,3 +2,4 @@ tools
 test/build/
 on_platform/on_platform Debug.launch
 on_platform/Debug
+.vscode

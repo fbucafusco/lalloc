@@ -140,7 +140,7 @@ typedef struct
     LALLOC_IDX_TYPE prev;       /* Logical index to the previous block in the list     */
     LALLOC_IDX_TYPE next;       /* Logical index to the next block in the list         */
     LALLOC_IDX_TYPE prev_phys;  /* Physical index to the previous block in the pool    */
-    LALLOC_IDX_TYPE next_phys;  /* Physical index to the next block in the pool        */
+    //LALLOC_IDX_TYPE next_phys;  /* Physical index to the next block in the pool        */
     LALLOC_IDX_TYPE blk_size;   /* playload block's size                               */
 } lalloc_block_t;
 #pragma pack()
@@ -151,7 +151,6 @@ typedef struct
  */
 #define LALLOC_IDX_INVALID              ((LALLOC_IDX_TYPE)(~((LALLOC_IDX_TYPE)0)))
 // #define LALLOC_BYTE_INVALID             ((uint8_t)(~((uint8_t)0)))
-
 
 #if LALLOC_ALIGNMENT==1
 #define LALLOC_POOL_TYPE                uint8_t

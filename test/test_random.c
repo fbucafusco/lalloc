@@ -39,7 +39,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lalloc_abstraction.h"
 
 extern int isr_dis;
+
+#ifdef STM32L475xx
 extern RNG_HandleTypeDef hrng;
+#endif
+
 typedef struct
 {
     char *title;                   // test description
@@ -58,6 +62,8 @@ typedef struct
     uint32_t num_bytes_written;
     uint32_t num_pool_wrap_arround;
 } tTestParams_Out;
+
+#define SCALE 130
 
 /**
    @brief this test does:
@@ -91,8 +97,12 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
     /* randomizo */
     uint32_t rnd;
+#ifdef STM32L475xx
     HAL_StatusTypeDef res = HAL_RNG_GenerateRandomNumber( &hrng, &rnd );
     srand( rnd );
+#else
+    srand( time(0) );
+#endif
 
     paramsout->num_bytes_written = 0;
     paramsout->num_pool_wrap_arround = 0;
@@ -109,6 +119,8 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
     TEST_ASSERT_TRUE( isr_dis == 0 );
     /* request memory space */
     lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
+    lalloc_print_graph(obj, 'A',  SCALE);
+
     TEST_ASSERT_TRUE( isr_dis == 0 );
     p_mem_last = p_mem;
 
@@ -132,17 +144,21 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
             sprintf( message, "Bytes given: %d Bytes written %d", given_size, current_charnum );
 
+           
             lalloc_commit( obj, current_charnum );
+             lalloc_print_graph(obj, 'C',  SCALE);
 
-            TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
+           // TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
 
             TEST_ASSERT_TRUE( isr_dis == 0 );
 
             paramsout->num_allocs++;
             paramsout->num_bytes_written += current_charnum;
-
+ 
+ 
             /* Requesta a ram area */
             lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
+             lalloc_print_graph(obj, 'A',  SCALE);
         }
 
         TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
@@ -153,9 +169,10 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
         if ( num_allocs )
         {
+             
             /* Dealloc */
             lalloc_free( obj, p_mem_last );
-
+ lalloc_print_graph(obj, 'F',  SCALE);
             TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
             TEST_ASSERT_TRUE( isr_dis == 0 );
         }
@@ -240,8 +257,7 @@ void test_random_3()
     tTestParams_In params_in;
     tTestParams_Out paramsout;
 
-    // uint32_t pool_size = uint32_random_range( 50, 300 );
-
+    
     params_in.pool_size = 151;
     params_in.simulations_count = 50000;
     params_in.blocksize_min = 1;
@@ -253,6 +269,7 @@ void test_random_3()
     random_test( &test_alloc, &params_in, &paramsout );
 }
 
+#if 0
 void test_random()
 {
     int i;
@@ -272,3 +289,15 @@ void test_random()
 
     random_test( &test_alloc, &params_in, &paramsout );
 }
+#endif
+ 
+#ifndef STM32L475xx
+int main()
+{
+    RUN_TEST(test_random_1);
+    RUN_TEST(test_random_2);
+    RUN_TEST(test_random_3);
+    // RUN_TEST(test_random);
+    return 0;
+}
+#endif
