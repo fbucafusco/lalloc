@@ -1,4 +1,4 @@
-#MAKEFILE PATH 
+#MAKEFILE PATH
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 #LIBS PATH
@@ -15,10 +15,10 @@ include project.mk
 
 #Flags que se le pasa al compilador (pueden agregarse en project.mk)
 CFLAGS += $(foreach inc, $(INC_FILES), -I$(inc) )
-CFLAGS += -D_WIN32 -ggdb -Wall
+CFLAGS += -D_WIN32 -ggdb -Wall -fprofile-arcs -ftest-coverage
 
 #Flags que se le pasa al linker  (pueden agregarse en project.mk)
-LFLAGS += 
+LFLAGS +=  -lgcov
 
 INDEX = ""
 
@@ -77,6 +77,9 @@ clean%: INDEX=$(@:clean%=%)
 clean%:
 	@echo "Cleaning Test "$(INDEX)
 	@rm -rf $(OUT_PATH)$(INDEX)*.o  
+	@rm -rf $(OUT_PATH)$(INDEX)*.gcda
+	@rm -rf $(OUT_PATH)$(INDEX)*.gcno
+	@rm -rf ./coverage
 	@rm -rf $(PROJECT_NAME)_$(INDEX) #$(OUT_PATH)$(INDEX)
 
 clean: $(foreach test_i, $(TESTS),  $(subst test,clean, $(test_i))    )
@@ -89,6 +92,16 @@ run%:
 
 run: $(foreach test_i, $(TESTS),  $(subst test,run, $(test_i)) )
 	@echo "done"
+
+.PHONY: coverage
+coverage:
+	@echo "Generating coverage report"
+	@mkdir -p ./coverage
+	@lcov --capture --initial --directory . --output-file ./coverage/base.info
+	@$(foreach outdir,$(wildcard ./out*),lcov --capture --directory $(outdir) --output-file $(outdir)/coverage.info &&) true
+	@lcov $(foreach outdir,$(wildcard ./out*),--add-tracefile $(outdir)/coverage.info ) --output-file ./coverage/total_coverage.info
+	@genhtml ./coverage/total_coverage.info --output-directory ./coverage/html
+	@echo "Coverage reports generated in "./coverage/html
 
 #a: 	
 #	$(MAKE) info
