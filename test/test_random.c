@@ -84,24 +84,24 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
     isr_dis = 0;
     static uint32_t runcount = 0;
     uint32_t i;
-    uint8_t toggle;
+    // uint8_t toggle;
 
     LALLOC_IDX_TYPE current_charnum;
     LALLOC_IDX_TYPE given_size;
-    LALLOC_IDX_TYPE free_space;
+    // LALLOC_IDX_TYPE free_space;
 
     char *p_mem;
     char *p_mem_last;
 
     char message[200];
 
-    /* randomizo */
-    uint32_t rnd;
+    /* randomizing */
 #ifdef STM32L475xx
+    uint32_t rnd;
     HAL_StatusTypeDef res = HAL_RNG_GenerateRandomNumber( &hrng, &rnd );
     srand( rnd );
 #else
-    srand( time(0) );
+    srand( time( 0 ) );
 #endif
 
     paramsout->num_bytes_written = 0;
@@ -109,7 +109,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
     paramsout->num_allocs = 0;
 
-    toggle = 0;
+    // toggle = 0;
 
     printf( "Simulations: ........................... %u\n", params->simulations_count );
     printf( "Buffer Size: ........................... %u B\n", params->pool_size );
@@ -119,7 +119,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
     TEST_ASSERT_TRUE( isr_dis == 0 );
     /* request memory space */
     lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
-    lalloc_print_graph(obj, 'A',  SCALE);
+    // lalloc_print_graph(obj, 'A',  SCALE);
 
     TEST_ASSERT_TRUE( isr_dis == 0 );
     p_mem_last = p_mem;
@@ -144,21 +144,19 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
             sprintf( message, "Bytes given: %d Bytes written %d", given_size, current_charnum );
 
-           
             lalloc_commit( obj, current_charnum );
-             lalloc_print_graph(obj, 'C',  SCALE);
+            //  lalloc_print_graph(obj, 'C',  SCALE);
 
-           // TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
+            // TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
 
             TEST_ASSERT_TRUE( isr_dis == 0 );
 
             paramsout->num_allocs++;
             paramsout->num_bytes_written += current_charnum;
- 
- 
+
             /* Requesta a ram area */
             lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
-             lalloc_print_graph(obj, 'A',  SCALE);
+            //lalloc_print_graph(obj, 'A',  SCALE);
         }
 
         TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
@@ -169,10 +167,10 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
         if ( num_allocs )
         {
-             
+
             /* Dealloc */
             lalloc_free( obj, p_mem_last );
- lalloc_print_graph(obj, 'F',  SCALE);
+            //lalloc_print_graph(obj, 'F',  SCALE);
             TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
             TEST_ASSERT_TRUE( isr_dis == 0 );
         }
@@ -206,10 +204,6 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
  * */
 void test_random_1()
 {
-    int i;
-    uint8_t *data;
-    LALLOC_IDX_TYPE size;
-
     tTestParams_In params_in;
     tTestParams_Out paramsout;
 
@@ -228,10 +222,6 @@ void test_random_1()
 
 void test_random_2()
 {
-    int i;
-    uint8_t *data;
-    LALLOC_IDX_TYPE size;
-
     tTestParams_In params_in;
     tTestParams_Out paramsout;
 
@@ -250,14 +240,9 @@ void test_random_2()
 
 void test_random_3()
 {
-    int i;
-    uint8_t *data;
-    LALLOC_IDX_TYPE size;
-
     tTestParams_In params_in;
     tTestParams_Out paramsout;
 
-    
     params_in.pool_size = 151;
     params_in.simulations_count = 50000;
     params_in.blocksize_min = 1;
@@ -269,20 +254,16 @@ void test_random_3()
     random_test( &test_alloc, &params_in, &paramsout );
 }
 
-#if 0
+#if 1
 void test_random()
 {
-    int i;
-    uint8_t *data;
-    LALLOC_IDX_TYPE size;
-
     tTestParams_In params_in;
     tTestParams_Out paramsout;
 
-    params_in.pool_size = uint32_random_range( 32768 , 65535 );
+    params_in.pool_size = uint32_random_range( 32768, 65535 );
     params_in.simulations_count = 50000;
     params_in.blocksize_min = 1;
-    params_in.blocksize_max = uint32_random_range( params_in.blocksize_min , params_in.pool_size );
+    params_in.blocksize_max = uint32_random_range( params_in.blocksize_min, params_in.pool_size );
     params_in.title = ( char * )__FUNCTION__;
 
     LALLOC_DECLARE( test_alloc, params_in.pool_size, 0 );
@@ -290,14 +271,14 @@ void test_random()
     random_test( &test_alloc, &params_in, &paramsout );
 }
 #endif
- 
+
 #ifndef STM32L475xx
 int main()
 {
-    RUN_TEST(test_random_1);
-    RUN_TEST(test_random_2);
-    RUN_TEST(test_random_3);
-    // RUN_TEST(test_random);
+    RUN_TEST( test_random_1 );
+    RUN_TEST( test_random_2 );
+    RUN_TEST( test_random_3 );
+    RUN_TEST( test_random );
     return 0;
 }
 #endif

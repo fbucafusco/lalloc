@@ -50,19 +50,23 @@ void test_assert( bool condition, const char *fcn, int line_ )
 
 void test_crtical_start( const char *fcn, int line_ )
 {
-    static char *lastfcn;
-    static int lastline;
+    static char *lastfcn = NULL;
+    static int lastline = 0;
+
     isr_dis++;
 
     if ( isr_dis >= 2 )
     {
         char buffer[500];
         sprintf( buffer, "Recursive critical section in %s, line %d", lastfcn, lastline );
+    
         TEST_ASSERT_TRUE_MESSAGE( 0, buffer );
+
 #ifndef STM32L475xx
         fflush( stdout );
 #endif
     };
+
     lastline = line_;
     lastfcn = fcn;
 }
@@ -70,5 +74,4 @@ void test_crtical_start( const char *fcn, int line_ )
 void test_crtical_end( void )
 {
     isr_dis--;
-    /* printf("-1\n"); fflush(stdout);*/
 }

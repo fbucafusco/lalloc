@@ -40,14 +40,12 @@
 #define LALLOC_ASSERT(CONDITION)    if(!(CONDITION)) printf("error EN %s en linea %u", __FUNCTION__ , __LINE__   ); assert(CONDITION);
 #endif
 
-
 #define LALLOC_CRITICAL_START test_crtical_start(__FUNCTION__ , __LINE__)
 #define LALLOC_CRITICAL_END   test_crtical_end()
 
 /* LALLOC_VALIDATE_INDEX
 it defines a run time validation for the index passed to methods.
 */
-//#define LALLOC_VALIDATE_INDEX(IDX)  LALLOC_ASSERT( ( (IDX)<obj->size ) )
 
 /* in order to enable test code */
 #define LALLOC_TEST

@@ -7,22 +7,22 @@ extern const LALLOC_IDX_TYPE lalloc_block_size;
 
 /* TEST PURPOSES ONLY
    It saves data into the data field of the block  */
-void _block_set_data(uint8_t *pool, LALLOC_IDX_TYPE block_idx, uint8_t *addr, LALLOC_IDX_TYPE size)
+void _block_set_data( uint8_t *pool, LALLOC_IDX_TYPE block_idx, uint8_t *addr, LALLOC_IDX_TYPE size )
 {
     LALLOC_IDX_TYPE block_size;
     uint8_t *pdataDest;
 
-    LALLOC_GET_BLOCK_SIZE_FROMPOOL_(pool, block_idx, block_size);
+    LALLOC_GET_BLOCK_SIZE_FROMPOOL_( pool, block_idx, block_size );
 
     /* limit the length of the data */
-    if (block_size < size)
+    if ( block_size < size )
     {
         size = block_size;
     }
 
-    LALLOC_GET_BLOCK_DATA_FROMPOOL_(pool, block_idx, pdataDest);
+    LALLOC_GET_BLOCK_DATA_FROMPOOL_( pool, block_idx, pdataDest );
 
-    memcpy(pdataDest, addr, size);
+    memcpy( pdataDest, addr, size );
 }
 
 /**
@@ -33,7 +33,7 @@ void _block_set_data(uint8_t *pool, LALLOC_IDX_TYPE block_idx, uint8_t *addr, LA
    @param obj
    @return uint16_t  returns a % x 10
  */
-void lalloc_measure_framgentation(LALLOC_T *obj, float *sqbase, float *average_based)
+void lalloc_measure_framgentation( LALLOC_T *obj, float *sqbase, float *average_based )
 {
     uint32_t n;
     float sum2 = 0;
@@ -44,23 +44,23 @@ void lalloc_measure_framgentation(LALLOC_T *obj, float *sqbase, float *average_b
     LALLOC_IDX_TYPE node = obj->dyn->flist;
 
     /* Take the flist element (the first) and return your information, and remove the flist node. */
-    if (LALLOC_IDX_INVALID != node)
+    if ( LALLOC_IDX_INVALID != node )
     {
         n = 0;
 
-        while (1)
+        while ( 1 )
         {
             LALLOC_IDX_TYPE size;
 
-            LALLOC_GET_BLOCK_SIZE_FROMPOOL_(obj->pool, node, size);
+            LALLOC_GET_BLOCK_SIZE_FROMPOOL_( obj->pool, node, size );
             size &= ~LALLOC_FREE_NODE_MASK;
 
             sum += size;
             sum2 += size * size;
             n++;
 
-            LALLOC_GET_BLOCK_NEXT_FROMPOOL(obj->pool, node, node);
-            if (node == obj->dyn->flist)
+            LALLOC_GET_BLOCK_NEXT_FROMPOOL( obj->pool, node, node );
+            if ( node == obj->dyn->flist )
             {
                 break;
             }
@@ -68,11 +68,11 @@ void lalloc_measure_framgentation(LALLOC_T *obj, float *sqbase, float *average_b
 
         // float mean = ((float)sum) / ((float)n);
 
-        float frag = sqrtf(sum2) / sum;
+        float frag = sqrtf( sum2 ) / sum;
         frag = 1 - frag * frag;
 
         *sqbase = 100.0 * frag;
-        *average_based = 100.0 - (100 / n);
+        *average_based = 100.0 - ( 100 / n );
     }
     else
     {
@@ -84,41 +84,40 @@ void lalloc_measure_framgentation(LALLOC_T *obj, float *sqbase, float *average_b
     LALLOC_CRITICAL_END;
 }
 
-LALLOC_IDX_TYPE lalloc_print_graph(LALLOC_T *obj, char last, uint32_t scale)
+/**
+   @brief Prints in stdout a ASCII representation of the nodes in the pool.
+          TESTS PURPOSES ONLY
+   @param obj
+
+ */
+void lalloc_print_graph( LALLOC_T *obj, char last, uint32_t scale )
 {
     size_t pool_size_ = scale;
 
     char b[pool_size_ + 2];
-    memset(b, 'F', pool_size_);
+    memset( b, 'F', pool_size_ );
 
     LALLOC_IDX_TYPE node = 0;
-    LALLOC_IDX_TYPE n = 0;
+    // LALLOC_IDX_TYPE n = 0;
     LALLOC_IDX_TYPE idx = 0;
     LALLOC_IDX_TYPE next_phy;
     LALLOC_IDX_TYPE block_size;
     char c = 'A';
 
-    if (LALLOC_IDX_INVALID != node)
+    if ( LALLOC_IDX_INVALID != node )
     {
-        while (1)
+        while ( 1 )
         {
-            LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL_(obj->pool, idx, next_phy);
-            LALLOC_GET_BLOCK_SIZE_FROMPOOL_(obj->pool, idx, block_size);
+            LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL_( obj->pool, idx, next_phy );
+            LALLOC_GET_BLOCK_SIZE_FROMPOOL_( obj->pool, idx, block_size );
 
-            if (block_size & LALLOC_FREE_NODE_MASK)
+            if ( block_size & LALLOC_FREE_NODE_MASK )
             {
-                if (idx == obj->dyn->alloc_block && idx != LALLOC_IDX_INVALID)
-                {
-                    c = 'G'; // given
-                }
-                else
-                {
-                    c = 'F'; // free
-                }
+                c = 'F'; // free
             }
             else
             {
-                if (idx == obj->dyn->alloc_block && idx != LALLOC_IDX_INVALID)
+                if ( idx == obj->dyn->alloc_block && idx != LALLOC_IDX_INVALID )
                 {
                     c = 'r'; // reserved
                 }
@@ -131,21 +130,21 @@ LALLOC_IDX_TYPE lalloc_print_graph(LALLOC_T *obj, char last, uint32_t scale)
             /* clear free node flag */
             block_size &= ~LALLOC_FREE_NODE_MASK;
 
-            size_t idx_ = (idx * scale) / obj->size;
-            size_t block_size_ = (block_size * scale) / obj->size;
-            size_t hdr_size_ = (LALLOC_NODE_HEAD_SIZE * scale) / obj->size;
+            size_t idx_ = ( idx * scale ) / obj->size;
+            size_t block_size_ = ( block_size * scale ) / obj->size;
+            size_t hdr_size_ = ( LALLOC_NODE_HEAD_SIZE * scale ) / obj->size;
 
-            if (idx_ >= pool_size_ || block_size_ >= pool_size_)
+            if ( idx_ >= pool_size_ || block_size_ >= pool_size_ )
             {
-                exit(-1);
+                exit( -1 ); //stops execution because an error occurred
             }
 
-            for (int i = idx_; i < idx_ + block_size_ + hdr_size_; i++)
+            for ( int i = idx_; i < idx_ + block_size_ + hdr_size_; i++ )
             {
                 b[i] = c;
             }
 
-            if (next_phy == obj->size)
+            if ( next_phy == obj->size )
             {
                 /* end of the container */
                 break;
@@ -153,93 +152,33 @@ LALLOC_IDX_TYPE lalloc_print_graph(LALLOC_T *obj, char last, uint32_t scale)
 
             /* if the next_phy block is not higher than the current idx,
                is an error */
-            if (!(next_phy > idx))
+            if ( !( next_phy > idx ) )
             {
-                break;
+                exit( -2 ); //stops execution because an error occurred
             }
 
             /* if the next_phy block is outside the container */
-            if (next_phy > obj->size)
+            if ( next_phy > obj->size )
             {
-                break;
+                exit( -3 ); //stops execution because an error occurred
             }
 
             idx = next_phy;
         }
-    }
-    else
-    {
     }
 
     b[pool_size_] = '\n';
     b[pool_size_ + 1] = '\0';
 
-    printf("%c - %s", last, b);
-
-    return n;
+    printf( "%c - %s", last, b );
 }
 
-LALLOC_IDX_TYPE lalloc_print_snapshot(LALLOC_T *obj)
-{
-    LALLOC_IDX_TYPE node = 0;
-    LALLOC_IDX_TYPE n = 0;
-    LALLOC_IDX_TYPE idx = 0;
-    LALLOC_IDX_TYPE next_phy;
-    LALLOC_IDX_TYPE size;
-
-    // printf("lalloc_print_snapshot: \n");
-    // print containter info, the addresses needs to crop the unused information based on the range of LALLOC_IDX_TYPE
-    printf("container start 0x%u end 0x%u\n",
-           ((uint32_t)obj->pool) & (LALLOC_MAX_BYTES << 1 | 0x1),
-           ((uint32_t)obj->pool + obj->size) & (LALLOC_MAX_BYTES << 1 | 0x1));
-
-    if (LALLOC_IDX_INVALID != node)
-    {
-        while (1)
-        {
-            LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL_(obj->pool, idx, next_phy);
-            LALLOC_GET_BLOCK_SIZE_FROMPOOL_(obj->pool, idx, size);
-
-            /* clear free node flag */
-            size &= ~LALLOC_FREE_NODE_MASK;
-
-            if (next_phy == obj->size)
-            {
-                /* end of the container */
-                break;
-            }
-
-            /* if the next_phy block is not higher than the current idx,
-               is an error */
-            if (!(next_phy > idx))
-            {
-                break;
-            }
-
-            /* if the next_phy block is outside the container */
-            if (next_phy > obj->size)
-            {
-                break;
-            }
-
-            printf("node %d (0x%u): %u\n", node, (uint32_t)&obj->pool[node] & (LALLOC_MAX_BYTES << 1 | 0x1), size);
-
-            idx = next_phy;
-        }
-    }
-    else
-    {
-        printf("lalloc_print_snapshot: no nodes\n");
-    }
-
-    return n;
-}
 
 /* Verifies the data structure integrity TESTS PURPOSES ONLY
    1: ok,
    0: error
 */
-LALLOC_IDX_TYPE lalloc_sanity_check(LALLOC_T *obj)
+LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
 {
     LALLOC_IDX_TYPE idx;
     LALLOC_IDX_TYPE next_phy;
@@ -263,10 +202,10 @@ LALLOC_IDX_TYPE lalloc_sanity_check(LALLOC_T *obj)
     idx = 0;
 
     /* forward validation */
-    while (1)
+    while ( 1 )
     {
-        LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL_(obj->pool, idx, next_phy);
-        LALLOC_GET_BLOCK_SIZE_FROMPOOL_(obj->pool, idx, size);
+        LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL_( obj->pool, idx, next_phy );
+        LALLOC_GET_BLOCK_SIZE_FROMPOOL_( obj->pool, idx, size );
 
         /* clear free node flag */
         size &= ~LALLOC_FREE_NODE_MASK;
@@ -274,7 +213,7 @@ LALLOC_IDX_TYPE lalloc_sanity_check(LALLOC_T *obj)
 
         num_next++;
 
-        if (next_phy == obj->size)
+        if ( next_phy == obj->size )
         {
             /* end of the container */
             good1 = 1;
@@ -283,17 +222,17 @@ LALLOC_IDX_TYPE lalloc_sanity_check(LALLOC_T *obj)
 
         /* if the next_phy block is not higher than the current idx,
            is an error */
-        if (!(next_phy > idx))
+        if ( !( next_phy > idx ) )
         {
-            printf("%s next physical block is not higher than the current idx\n", __FUNCTION__);
+            printf( "%s next physical block is not higher than the current idx\n", __FUNCTION__ );
             good1 = 0;
             break;
         }
 
         /* if the next_phy block is outside the container */
-        if (next_phy > obj->size)
+        if ( next_phy > obj->size )
         {
-            printf("%s next physical block is outside the container %u %u \n", __FUNCTION__, next_phy, obj->size);
+            printf( "%s next physical block is outside the container %u %u \n", __FUNCTION__, next_phy, obj->size );
             good1 = 0;
             break;
         }
@@ -303,13 +242,13 @@ LALLOC_IDX_TYPE lalloc_sanity_check(LALLOC_T *obj)
 
     /* idx stays at the last physical block.
        backward validation */
-    while (1)
+    while ( 1 )
     {
-        LALLOC_GET_BLOCK_PREVPHYS_FROMPOOL_(obj->pool, idx, prev_phy);
+        LALLOC_GET_BLOCK_PREVPHYS_FROMPOOL_( obj->pool, idx, prev_phy );
 
         num_prev++;
 
-        if (prev_phy == LALLOC_IDX_INVALID)
+        if ( prev_phy == LALLOC_IDX_INVALID )
         {
             /* end */
             good2 = 1;
@@ -317,17 +256,17 @@ LALLOC_IDX_TYPE lalloc_sanity_check(LALLOC_T *obj)
         }
 
         /* if the prev_phy block is not lower than the current idx, is an error */
-        if (!(prev_phy < idx))
+        if ( !( prev_phy < idx ) )
         {
-            printf("%s prev physical block is not lower than the current idx\n", __FUNCTION__);
+            printf( "%s prev physical block is not lower than the current idx\n", __FUNCTION__ );
             good2 = 0;
             break;
         }
 
         /* if the next_phy block is not less than the total pool size, is an error */
-        if (prev_phy >= obj->size)
+        if ( prev_phy >= obj->size )
         {
-            printf("%s prev physical block is outside the container\n", __FUNCTION__);
+            printf( "%s prev physical block is outside the container\n", __FUNCTION__ );
             good2 = 0;
             break;
         }
@@ -336,9 +275,9 @@ LALLOC_IDX_TYPE lalloc_sanity_check(LALLOC_T *obj)
     }
 
     /* matches the number of blocks */
-    if (num_prev != num_next)
+    if ( num_prev != num_next )
     {
-        printf("%s num_prev != num_next\n", __FUNCTION__);
+        printf( "%s num_prev != num_next\n", __FUNCTION__ );
         good3 = 0;
     }
     else
@@ -346,21 +285,20 @@ LALLOC_IDX_TYPE lalloc_sanity_check(LALLOC_T *obj)
         /* Here verify that Nex's indices coincide */
     }
 
-    if (!(size_sum < obj->size))
+    if ( !( size_sum < obj->size ) )
     {
-        printf("%s size_sum < obj->size\n", __FUNCTION__);
+        printf( "%s size_sum < obj->size\n", __FUNCTION__ );
         good4 = 0;
     }
 
     /* 2nd stage: move through the lists in both directions.  TODO */
     LALLOC_CRITICAL_END;
 
-    volatile bool rv = false;
-    if (!(good1 && good2 && good3 && good4))
-    {
-        lalloc_print_snapshot(obj);
-        rv = true;
-    }
+    // volatile bool rv = false;
+    // if (!(good1 && good2 && good3 && good4))
+    // {
+    //     rv = true;
+    // }
 
     return good1 && good2 && good3 && good4;
 }

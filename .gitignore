@@ -1,5 +1,5 @@
 tools
-test/build/
+test/out*/
 on_platform/on_platform Debug.launch
 on_platform/Debug
 .vscode

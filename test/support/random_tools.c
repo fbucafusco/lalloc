@@ -85,10 +85,12 @@ void random_byte_array ( uint16_t len, char *buffer )
     }
 }
 
+/**
+   @brief   Generates a 32 bit random number bounded to min and max.
 
-/*
-if generates a 32 bit random number bounded to min and max.
-*/
+   @param min
+   @param max
+ */
 uint32_t uint32_random_range( uint32_t min, uint32_t max )
 {
     if ( max == min )
@@ -97,7 +99,7 @@ uint32_t uint32_random_range( uint32_t min, uint32_t max )
     }
 
     int rand_ = rand();
-    int rand_max = RAND_MAX;
+    // int rand_max = RAND_MAX;
     float slope = ( ( float )max - min ) / ( ( float )RAND_MAX );
     uint64_t rand_num = ( rand_ * slope );
     return rand_num + min;

@@ -63,7 +63,7 @@ test%:
 	$(foreach src_file, $(SRC_FILES), gcc -c $(src_file) -Wall $(CFLAGS) $(CFLAGS_EXTRA) -o $(OUT_PATH)$(INDEX)/$(notdir $(patsubst %.c,%.o, $(src_file))); )  
 	@echo '---------------------------------------------------------------------'
 	@echo "Linking "$<	
-	gcc $(OUT_PATH)$(INDEX)/*.o $(LFLAGS) -o $(PROJECT_NAME)_$(INDEX)
+	gcc $(OUT_PATH)$(INDEX)/*.o $(LFLAGS) -o $(OUT_PATH)$(INDEX)/$(PROJECT_NAME)_$(INDEX)
 
 #regla que imprime simplemente la informacion
 .PHONY: info
@@ -79,14 +79,13 @@ clean%:
 	@rm -rf $(OUT_PATH)$(INDEX)*.o  
 	@rm -rf $(PROJECT_NAME)_$(INDEX) #$(OUT_PATH)$(INDEX)
 
-#
 clean: $(foreach test_i, $(TESTS),  $(subst test,clean, $(test_i))    )
 	@echo 
 	@echo "done"
 
 run%: INDEX=$(@:run%=%)
 run%:
-	./$(PROJECT_NAME)_$(INDEX)
+	$(OUT_PATH)$(INDEX)/$(PROJECT_NAME)_$(INDEX)
 
 run: $(foreach test_i, $(TESTS),  $(subst test,run, $(test_i)) )
 	@echo "done"
