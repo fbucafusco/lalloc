@@ -1,11 +1,33 @@
-image: ruby:3.0.3
-test:   
-   stage: test
-   script: 
-      - gem install ceedling
-      - cd test    
-      - ceedling test:all
+stages:
+  - build
+  - test
+  - coverage
+
+build:
+   stage: build
+   script:  
+      - cd test  
+      - make
    artifacts:
      paths:
-      - test/build/*
- 
+      - test/out*
+test:
+   stage: test
+   timeout: 5h 10m
+   script:
+      - cd test
+      - make run
+   artifacts:
+     paths:
+      - test/out*
+
+coverage:
+  stage: coverage
+  script:
+    - cd test
+    - make coverage
+  artifacts:
+    paths:
+      - test/coverage/html/*
+    expire_in: 1 week
+  

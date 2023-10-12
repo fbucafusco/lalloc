@@ -1,21 +1,84 @@
 version: 2.1
 
 jobs:
-  my-job:
+  build:
     docker:
-      - image: cimg/ruby:3.0.3
-    # working_directory: ~/project/test
+      - image: debian:bullseye   
     steps:
-      - checkout     
-      - run: sudo apt-get update
-      - run: sudo apt-get -y install build-essential git  ruby-full 
-      - run: ruby --version
-      - run: gem install ceedling
-      - run: ceedling version
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update
+            apt-get install -y build-essential
+            apt-get install -y gcovr lcov
+      - run:
+          name: Build
+          command: |
+            cd test
+            make
+      - persist_to_workspace:
+          root: test
+          paths:
+            - out*
 
-      - run: cd test && ceedling test:all
+  test:
+    docker:
+      - image: debian:bullseye
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /workspace
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update
+            apt-get install -y build-essential
+            apt-get install -y gcovr lcov
+      - run:
+          name: Test
+          command: |
+            cd test
+            make
+            make run
+      - persist_to_workspace:
+          root: test
+          paths:
+            - out*
+
+  coverage:
+    docker:
+      - image: debian:bullseye
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /workspace
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update
+            apt-get install -y build-essential
+            apt-get install -y gcovr lcov
+      - run:
+          name: Generate Coverage
+          command: |
+            cd test
+            make
+            make run 
+            make coverage
+      - persist_to_workspace:
+          root: test
+          paths:
+            - coverage/html/*
 
 workflows:
-  my-workflow:
+  version: 2
+  build_test_coverage:
     jobs:
-      - my-job
+      - build
+      - test:
+          requires:
+            - build
+      - coverage:
+          requires:
+            - test
