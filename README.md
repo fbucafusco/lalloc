@@ -25,13 +25,11 @@ It allows to add, peek, and delete nodes from a list of variable-sized elements.
 
 ## Usage
 
-   - Within any scope:
+   - Within any scope: allocate an object with a given RAM size
 
 ```
 LALLOC_DECLARE( objname , pool_size , 0 ); 
 ```
-
-This will allocate an object with a given RAM size (fixed by the processor alignment)
 
    - Within user aplicaction (fill with data)
 
@@ -52,27 +50,24 @@ lalloc_get_n ( objname , &pool, &size, 0 ); //retrieve the oldest element.
 lalloc_free_dest ( objname , pool );        //frees the pool. 
 ```
 
-## Why another memory allocation scheme? A little story.
+## Why another memory allocation scheme? 
 
-This library was written originally 
-
-
-Originally it was written to implement many instances of an UART driver within a microcontroller.
+This library was written originally to support many instances of an UART driver running on a microcontroller.
 
 **Why?**
 
-Some time ago, I wanted a driver that handles all receptions asynchronously at ISR level and split all the frames automatically. 
+Some time ago, I wanted a driver that handled all receptions asynchronously at ISR level and split all the frames automatically. 
 The protocol I needed to use was an ASCII character delimited one with variable size frames. 
 When MANY frames were coming at a certain rate, and depending on the system's processing speed, some frames were lost.
 
-I didn't want a malloc/free to do this to avoid fragmentation in any way. Then, I could have used the N buffering strategy, but to avoid using memory inefficiently (I mean, reserving N bytes for each buffer), I thought of another solution.
+One way to achieve this, would have been using a ping pong buffer, or a memory block strategy, but I wanted to avoid using memory inefficiently.
 
 Then, I implemented LALLOC to handle that problem.
 
 The main idea behind this was: 
 - To have some mechanism to offer to the driver that maximizes the available memory to store the incoming message. 
 - Initially the driver was in IDLE, but when a byte first incomes, the driver requested a memory pool to store the frame. 
-- When the frame is complete, the pool of memory is "closed".
+- When the frame is complete, the pool of memory was "closed".
 
 All the handling of the data was sent to another abstraction layer that implements the framing logic. Is not included in LALLOC (see packet_framer)
 
