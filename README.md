@@ -1,5 +1,4 @@
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://gitlab.com/fbucafusco/lalloc/-/network/master)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/37c027e716c64b5eaa6acad2f3e88186)](https://www.codacy.com?utm_source=gitlab.com&amp;utm_medium=referral&amp;utm_content=fbucafusco/lalloc&amp;utm_campaign=Badge_Grade)
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/ApgampwqiLTRb6gFADDgxz/HfgnnTMzZ5UqKMDNqhoTsd/tree/master.svg?style=svg&circle-token=374ece89186b0dcb3daa6434ace0aae24cc861fe)](https://dl.circleci.com/status-badge/redirect/circleci/ApgampwqiLTRb6gFADDgxz/HfgnnTMzZ5UqKMDNqhoTsd/tree/master)
 
 # LALLOC
 
@@ -60,14 +59,14 @@ Some time ago, I wanted a driver that handled all receptions asynchronously at I
 The protocol I needed to use was an ASCII character delimited one with variable size frames. 
 When MANY frames were coming at a certain rate, and depending on the system's processing speed, some frames were lost.
 
-One way to achieve this, would have been using a ping pong buffer, or a memory block strategy, but I wanted to avoid using memory inefficiently.
+One way to fix this, would have been using a ping pong buffer strategy, or a using a memory block allocator, but I wanted to avoid using memory inefficiently.
 
 Then, I implemented LALLOC to handle that problem.
 
 The main idea behind this was: 
 - To have some mechanism to offer to the driver that maximizes the available memory to store the incoming message. 
-- Initially the driver was in IDLE, but when a byte first incomes, the driver requested a memory pool to store the frame. 
-- When the frame is complete, the pool of memory was "closed".
+- Initially the driver was in IDLE, but when a byte first incomes, the driver requested a memory area to a LALLOC instance to store the frame. 
+- When the frame is complete, the memory area was "commited".
 
-All the handling of the data was sent to another abstraction layer that implements the framing logic. Is not included in LALLOC (see packet_framer)
+All the handling of the data was sent to another abstraction layer that implements the framing logic. Is not included in LALLOC.
 
