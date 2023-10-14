@@ -218,12 +218,10 @@
  * serial `RS232_putc()` function you wrote like thus:
  */
 #include "stm32l4xx_hal.h"
+void myputchar(int a);
 
-#define UNITY_OUTPUT_CHAR(a) extern UART_HandleTypeDef huart1; \
-        (&huart1)->Instance->TDR = (uint8_t) a; \
-        while ((__HAL_UART_GET_FLAG( (&huart1) , UART_FLAG_TXE) ? SET : RESET) == RESET){};
-//#define UNITY_OUTPUT_CHAR(a)  {extern UART_HandleTypeDef huart1; char aaa=a ; HAL_UART_Transmit(&huart1, (uint8_t*) &aaa, 1, 0xFFFF); }
-/* #define UNITY_OUTPUT_CHAR_HEADER_DECLARATION    RS232_putc(int) */
+#define UNITY_OUTPUT_CHAR(a) myputchar(a)
+#define UNITY_OMIT_OUTPUT_CHAR_HEADER_DECLARATION
 /* #define UNITY_OUTPUT_FLUSH()                    RS232_flush() */
 /* #define UNITY_OUTPUT_FLUSH_HEADER_DECLARATION   RS232_flush(void) */
 /* #define UNITY_OUTPUT_START()                    RS232_config(115200,1,8,0) */

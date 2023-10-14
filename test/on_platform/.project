@@ -32,24 +32,49 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>test</name>
+			<name>lalloc/inc</name>
 			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/test/test</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/inc</locationURI>
 		</link>
 		<link>
-			<name>Core/Inc/lalloc.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/inc/lalloc.h</locationURI>
+			<name>lalloc/src</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/src</locationURI>
 		</link>
 		<link>
-			<name>Core/Inc/lalloc_priv.h</name>
+			<name>test/lalloc_config.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/inc/lalloc_priv.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/lalloc_config.h</locationURI>
 		</link>
 		<link>
-			<name>Core/Src/lalloc.c</name>
+			<name>test/support</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/support</locationURI>
+		</link>
+		<link>
+			<name>test/test_basic.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/src/lalloc.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/test_basic.c</locationURI>
+		</link>
+		<link>
+			<name>test/test_list.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/test_list.c</locationURI>
+		</link>
+		<link>
+			<name>test/test_random.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/test_random.c</locationURI>
+		</link>
+		<link>
+			<name>test/test_random_2.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/test_random_2.c</locationURI>
+		</link>
+		<link>
+			<name>test/unity_src</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/unity_src</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

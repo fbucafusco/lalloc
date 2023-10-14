@@ -1,6 +1,6 @@
 tools
 test/out*
 test/coverage
-on_platform/on_platform Debug.launch
-on_platform/Debug
+test/on_platform/on_platform Debug.launch
+test/on_platform/Debug
 .vscode

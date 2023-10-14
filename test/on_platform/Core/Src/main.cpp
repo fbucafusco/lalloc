@@ -54,6 +54,8 @@ void tearDown(){}
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -67,6 +69,11 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
+void myputchar(int a)
+{
+	(&huart1)->Instance->TDR = (uint8_t) a;
+        while ((__HAL_UART_GET_FLAG( (&huart1) , UART_FLAG_TXE) ? SET : RESET) == RESET){};
+};
 
 /* USER CODE END PV */
 

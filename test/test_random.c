@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern int isr_dis;
 
 #ifdef STM32L475xx
+#include "stm32l4xx_hal.h"
 extern RNG_HandleTypeDef hrng;
 #endif
 
@@ -126,7 +127,8 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
     for ( i = 0; i < params->simulations_count; i++ )
     {
-        TEST_ASSERT_TRUE( p_mem != NULL && given_size > 0 );
+        TEST_ASSERT_TRUE( p_mem != NULL );
+        TEST_ASSERT_TRUE( given_size > 0 );
 
         /* generate a random number of bytes to insert */
         current_charnum = uint32_random_range( params->blocksize_min, params->blocksize_max );
