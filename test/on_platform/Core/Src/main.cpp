@@ -32,8 +32,8 @@ void test_random_2();
 void test_random_3();
 void test_random();
 
-void setUp(){}
-void tearDown(){}
+void setUp() {}
+void tearDown() {}
 
 #ifdef __cplusplus
 }
@@ -69,10 +69,10 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-void myputchar(int a)
+void myputchar( int a )
 {
-	(&huart1)->Instance->TDR = (uint8_t) a;
-        while ((__HAL_UART_GET_FLAG( (&huart1) , UART_FLAG_TXE) ? SET : RESET) == RESET){};
+    ( &huart1 )->Instance->TDR = ( uint8_t ) a;
+    while ( ( __HAL_UART_GET_FLAG( ( &huart1 ), UART_FLAG_TXE ) ? SET : RESET ) == RESET ) {};
 };
 
 /* USER CODE END PV */

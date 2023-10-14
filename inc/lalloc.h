@@ -48,7 +48,6 @@ extern "C" {
 
 /* DEFAULT VALUES: can be changed in  lalloc_config.h =========================================================================== */
 
-
 #ifndef LALLOC_ASSERT
 #define LALLOC_ASSERT(a)
 #endif

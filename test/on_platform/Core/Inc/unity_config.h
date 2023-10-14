@@ -218,7 +218,7 @@
  * serial `RS232_putc()` function you wrote like thus:
  */
 #include "stm32l4xx_hal.h"
-void myputchar(int a);
+void myputchar( int a );
 
 #define UNITY_OUTPUT_CHAR(a) myputchar(a)
 #define UNITY_OMIT_OUTPUT_CHAR_HEADER_DECLARATION
@@ -242,7 +242,7 @@ void myputchar(int a);
  *
  * TEST - PASS (10 ms)
  */
-#define UNITY_INCLUDE_EXEC_TIME 
+#define UNITY_INCLUDE_EXEC_TIME
 #define UNITY_CLOCK_MS() (HAL_GetTick())
 
 #endif /* UNITY_CONFIG_H */

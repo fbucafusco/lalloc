@@ -38,6 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "random_tools.h"
 #include "lalloc_abstraction.h"
 
+#define PRINT_RESULTS 0
+
 extern int isr_dis;
 
 #ifdef STM32L475xx
@@ -57,11 +59,8 @@ typedef struct
 /* estructuras */
 typedef struct
 {
-    // uint32_t efficiency_avrg;           //average efficiency
-    // uint32_t efficiency_min;            //min efficiency
     uint32_t num_allocs;
     uint32_t num_bytes_written;
-    uint32_t num_pool_wrap_arround;
 } tTestParams_Out;
 
 #define SCALE 130
@@ -82,19 +81,12 @@ typedef struct
  */
 void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *paramsout )
 {
-    isr_dis = 0;
     static uint32_t runcount = 0;
     uint32_t i;
-    // uint8_t toggle;
-
     LALLOC_IDX_TYPE current_charnum;
     LALLOC_IDX_TYPE given_size;
-    // LALLOC_IDX_TYPE free_space;
-
     char *p_mem;
     char *p_mem_last;
-
-    char message[200];
 
     /* randomizing */
 #ifdef STM32L475xx
@@ -105,38 +97,30 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
     srand( time( 0 ) );
 #endif
 
+    isr_dis = 0;
     paramsout->num_bytes_written = 0;
-    paramsout->num_pool_wrap_arround = 0;
-
     paramsout->num_allocs = 0;
-
-    // toggle = 0;
-
-    printf( "Simulations: ........................... %u\n", params->simulations_count );
-    printf( "Buffer Size: ........................... %u B\n", params->pool_size );
 
     /* initializes the object */
     lalloc_init( obj );
     TEST_ASSERT_TRUE( isr_dis == 0 );
+
     /* request memory space */
     lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
-    // lalloc_print_graph(obj, 'A',  SCALE);
+    // lalloc_print_graph(obj, 'A', SCALE);
 
     TEST_ASSERT_TRUE( isr_dis == 0 );
     p_mem_last = p_mem;
 
     for ( i = 0; i < params->simulations_count; i++ )
     {
-        TEST_ASSERT_TRUE( p_mem != NULL );
-        TEST_ASSERT_TRUE( given_size > 0 );
-
         /* generate a random number of bytes to insert */
         current_charnum = uint32_random_range( params->blocksize_min, params->blocksize_max );
 
         if ( current_charnum > given_size )
         {
             /* ensures that there will be space always */
-            current_charnum = given_size / 2;
+            current_charnum = given_size;
         }
 
         if ( current_charnum > 0 )
@@ -144,41 +128,47 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
             /* random data generation (it uses the charset provided by random_tools.c ) */
             random_byte_array( current_charnum, p_mem );
 
+#if PRINT_RESULTS == 1
+            char message[200];
             sprintf( message, "Bytes given: %d Bytes written %d", given_size, current_charnum );
+#endif
 
             lalloc_commit( obj, current_charnum );
-            //  lalloc_print_graph(obj, 'C',  SCALE);
 
-            // TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
-
+            TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
             TEST_ASSERT_TRUE( isr_dis == 0 );
+            // lalloc_print_graph(obj, 'A', SCALE);
 
             paramsout->num_allocs++;
             paramsout->num_bytes_written += current_charnum;
-
-            /* Requesta a ram area */
-            lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
-            //lalloc_print_graph(obj, 'A',  SCALE);
         }
 
+        /* Requesta a ram area */
+        lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
+        // lalloc_print_graph(obj, 'A', SCALE);
         TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
+
+        if ( p_mem == NULL && given_size == 0 )
+        {
+            TEST_ASSERT_TRUE( lalloc_is_full( obj ) );
+        }
 
         LALLOC_IDX_TYPE num_allocs = lalloc_get_alloc_count( obj );
 
         TEST_ASSERT_TRUE( isr_dis == 0 );
 
-        if ( num_allocs )
+        if ( p_mem_last != NULL )
         {
-
             /* Dealloc */
             lalloc_free( obj, p_mem_last );
-            //lalloc_print_graph(obj, 'F',  SCALE);
+            // lalloc_print_graph(obj, 'F', SCALE);
             TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
             TEST_ASSERT_TRUE( isr_dis == 0 );
         }
 
-        if ( current_charnum > 0 )
+        if ( p_mem != NULL && given_size > 0 )
         {
+            // last alloc didnt fail,
             p_mem_last = p_mem;
         }
 
@@ -189,14 +179,14 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
     /* final calculations and report */
     float a;
 
+#if PRINT_RESULTS == 1
+    printf( "Simulations: ........................... %u\n", params->simulations_count );
+    printf( "Buffer Size: ........................... %u B\n", params->pool_size );
     a = paramsout->num_bytes_written / 1024;
     printf( "Processed bytes ........................ %0.2f kB\n", a );
     a = ( float )paramsout->num_bytes_written / paramsout->num_allocs;
     printf( "Mean element size ...................... %3.2f B\n", a );
-    printf( "Buffer wrap arround count .............. %u\n", paramsout->num_pool_wrap_arround );
-    // printf ( "Buffer Eff (min): ...................... %u\%\n", paramsout->efficiency_min );
-    // printf ( "Buffer Eff (prom): ..................... %u\%\n", paramsout->efficiency_avrg );
-
+#endif
     runcount++;
 }
 
@@ -262,7 +252,7 @@ void test_random()
     tTestParams_In params_in;
     tTestParams_Out paramsout;
 
-    params_in.pool_size = uint32_random_range( 32768, 65535 );
+    params_in.pool_size = uint32_random_range( 10, 65535 );
     params_in.simulations_count = 50000;
     params_in.blocksize_min = 1;
     params_in.blocksize_max = uint32_random_range( params_in.blocksize_min, params_in.pool_size );
