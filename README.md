@@ -6,7 +6,7 @@
 
 Lalloc is a C-based library designed for memory allocation management in cases where the number of bytes needed is not known in advance. 
 
-The defines tres basic operations:
+The defines tree basic operations:
 
 - alloc: gives to the user the max amount of unfragmented memory from the pool. (the allocation is started)
 - commit: the user confirms the use of a given number of bytes from it. (the allocation is done)
@@ -40,33 +40,29 @@ lalloc_alloc( objname , &pool , &size );
 //the user must fill the pool with data, up to 'size' bytes. Asume you write 10 bytes.
 lalloc_commit( objname , 10  ); 
 ```
-
    - Within user aplicaction (get data)
-
 ```
 lalloc_get_n ( objname , &pool, &size, 0 ); //retrieve the oldest element.
 //use the data
 lalloc_free_dest ( objname , pool );        //frees the pool. 
 ```
 
-## Why another memory allocation scheme? 
+## Rationale for a New Memory Allocation Scheme
 
-This library was written originally to support many instances of an UART driver running on a microcontroller.
+This library emerged from a necessity to facilitate numerous instances of a UART (Universal Asynchronous Receiver/Transmitter) driver operating on a microcontroller.
 
-**Why?**
+Previously, I wanted a driver capable of managing receptions autonomously at the ISR (Interrupt Service Routine) level while also segregating the incoming frames effectively. 
+The protocol I was utilizing relied on ASCII character delimitation with frames of varying sizes. 
+When a substantial number of frames were being received at a particular rate, the system's processing capability became a limiting factor, resulting in loss of some frames.
 
-Some time ago, I wanted a driver that handled all receptions asynchronously at ISR level and split all the frames automatically. 
-The protocol I needed to use was an ASCII character delimited one with variable size frames. 
-When MANY frames were coming at a certain rate, and depending on the system's processing speed, some frames were lost.
+While solutions like employing a ping-pong buffer strategy or a memory block allocator could have addressed this issue, my priority was to ensure memory was used efficiently.
 
-One way to fix this, would have been using a ping pong buffer strategy, or a using a memory block allocator, but I wanted to avoid using memory inefficiently.
+Consequently, LALLOC was developed to tackle this challenge.
 
-Then, I implemented LALLOC to handle that problem.
+The central premise was to:: 
+- Establish a mechanism that would enable the driver to optimize the available memory for storing incoming messages. 
+- Initially, the driver would remain in an IDLE state, but upon receipt of the first byte, it would request a memory segment from a LALLOC instance to store the frame. 
+- Once the frame was fully received, the allocated memory segment would be "committed".
+- Additionally, given its role in managing incoming data frames, LALLOC incorporated an internal linked list functioning as a FIFO (First In, First Out) queue, enabling the data consumer to process frames in the order of their arrival.
 
-The main idea behind this was: 
-- To have some mechanism to offer to the driver that maximizes the available memory to store the incoming message. 
-- Initially the driver was in IDLE, but when a byte first incomes, the driver requested a memory area to a LALLOC instance to store the frame. 
-- When the frame is complete, the memory area was "commited".
-
-All the handling of the data was sent to another abstraction layer that implements the framing logic. Is not included in LALLOC.
-
+The data handling aspect was relegated to another abstraction layer, which encapsulated the framing logic, separate from the LALLOC implementation.
