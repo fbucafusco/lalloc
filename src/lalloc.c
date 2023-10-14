@@ -1026,4 +1026,4 @@ void lalloc_get_n( LALLOC_T *obj, void **addr, LALLOC_IDX_TYPE *size, LALLOC_IDX
     LALLOC_CRITICAL_END;
 }
 
-/* v0.10 */
+/* v0.20 */

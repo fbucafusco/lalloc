@@ -19,7 +19,7 @@ CFLAGS += -D_x86_TESTS -std=gnu99
 LFLAGS += -pthread -lm -ldl
 
 # TESTS = test3 
-TESTS = test1  test2 test3 test4
+TESTS = test1 test2 test3 test4 test5 test6
 
 #TEST1
 SRC_FILES_T1 	+= $(TESTS_BASE_PATH)test_basic.c
@@ -32,25 +32,31 @@ SRC_FILES_T2 	+= $(TESTS_BASE_PATH)support/lalloc_tools.c
 INC_FILES_T2 	=
 CFLAGS_T2		=
 
-#TEST3  
+#TEST3 			default LALLOC_ALIGNMENT & LALLOC_MAX_BYTES 
 SRC_FILES_T3 	+= $(TESTS_BASE_PATH)test_random.c
 SRC_FILES_T3 	+= $(TESTS_BASE_PATH)support/lalloc_tools.c
 SRC_FILES_T3 	+= $(TESTS_BASE_PATH)support/random_tools.c
 INC_FILES_T3 	=
 CFLAGS_T3		=
 
-#TEST4
-SRC_FILES_T4 	+= $(TESTS_BASE_PATH)test_random_2.c
+#TEST4          TEST3 without defaults 
+SRC_FILES_T4 	+= $(TESTS_BASE_PATH)test_random.c
 SRC_FILES_T4 	+= $(TESTS_BASE_PATH)support/lalloc_tools.c
 SRC_FILES_T4 	+= $(TESTS_BASE_PATH)support/random_tools.c
 INC_FILES_T4 	=
-CFLAGS_T4		=
+CFLAGS_T4		=  -DLALLOC_ALIGNMENT=4 -DLALLOC_MAX_BYTES=0xFFFFFFFF
 
+#TEST5			default LALLOC_ALIGNMENT & LALLOC_MAX_BYTES
+SRC_FILES_T5 	+= $(TESTS_BASE_PATH)test_random_2.c
+SRC_FILES_T5 	+= $(TESTS_BASE_PATH)support/lalloc_tools.c
+SRC_FILES_T5 	+= $(TESTS_BASE_PATH)support/random_tools.c
+INC_FILES_T5 	=
+CFLAGS_T5		=
 
-#ifndef LALLOC_ALIGNMENT
-#define LALLOC_ALIGNMENT               1
-#endif
-
-#ifndef LALLOC_MAX_BYTES
-#define LALLOC_MAX_BYTES               0xFFFF // 0xFFFFFFFF
-#endif
+#TEST6			TEST5 without defaults
+SRC_FILES_T6 	+= $(TESTS_BASE_PATH)test_random_2.c
+SRC_FILES_T6 	+= $(TESTS_BASE_PATH)support/lalloc_tools.c
+SRC_FILES_T6 	+= $(TESTS_BASE_PATH)support/random_tools.c
+INC_FILES_T6 	=
+CFLAGS_T6		=  -DLALLOC_ALIGNMENT=4 -DLALLOC_MAX_BYTES=0xFFFFFFFF
+ 

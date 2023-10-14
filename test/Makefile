@@ -9,6 +9,8 @@ TESTS_BASE_PATH = $(LIBS_PATH)test/
 
 #OUTPUT FILE PATHS
 OUT_PATH = $(MAKEFILE_DIR)out
+BIN_PATH = $(MAKEFILE_DIR)bin
+COVERAGE_PATH = $(MAKEFILE_DIR)coverage
 
 #includes all the project definitions
 include project.mk
@@ -53,8 +55,9 @@ test%:
 	@echo  $(CFLAGS_EXTRA)	 
 	@echo $(SRC_FILES_T)
 	@echo '---------------------------------------------------------------------'
+	@mkdir -p $(BIN_PATH)
 	@echo "Creating "$(OUT_PATH)$(INDEX)
-	@mkdir -p $(OUT_PATH)$(INDEX)
+	@mkdir -p $(OUT_PATH)$(INDEX)	
 	@echo '---------------------------------------------------------------------'
 	@echo "Compiling test files"
 	$(foreach src_file_t, $(SRC_FILES_T), gcc -c $(src_file_t) -Wall $(CFLAGS) $(CFLAGS_EXTRA) -o $(OUT_PATH)$(INDEX)/$(notdir $(patsubst %.c,%.o, $(src_file_t))); )  
@@ -63,7 +66,7 @@ test%:
 	$(foreach src_file, $(SRC_FILES), gcc -c $(src_file) -Wall $(CFLAGS) $(CFLAGS_EXTRA) -o $(OUT_PATH)$(INDEX)/$(notdir $(patsubst %.c,%.o, $(src_file))); )  
 	@echo '---------------------------------------------------------------------'
 	@echo "Linking "$<	
-	gcc $(OUT_PATH)$(INDEX)/*.o $(LFLAGS) -o $(OUT_PATH)$(INDEX)/$(PROJECT_NAME)_$(INDEX)
+	gcc $(OUT_PATH)$(INDEX)/*.o $(LFLAGS) -o $(BIN_PATH)/$(PROJECT_NAME)_$(INDEX)
 
 #regla que imprime simplemente la informacion
 .PHONY: info
@@ -79,7 +82,8 @@ clean%:
 	@rm -rf $(OUT_PATH)$(INDEX)*.o  
 	@rm -rf $(OUT_PATH)$(INDEX)*.gcda
 	@rm -rf $(OUT_PATH)$(INDEX)*.gcno
-	@rm -rf ./coverage
+	@rm -rf $(BIN_PATH)
+	@rm -rf $(COVERAGE_PATH)
 	@rm -rf $(PROJECT_NAME)_$(INDEX) #$(OUT_PATH)$(INDEX)
 
 clean: $(foreach test_i, $(TESTS),  $(subst test,clean, $(test_i))    )
@@ -88,7 +92,7 @@ clean: $(foreach test_i, $(TESTS),  $(subst test,clean, $(test_i))    )
 
 run%: INDEX=$(@:run%=%)
 run%:
-	$(OUT_PATH)$(INDEX)/$(PROJECT_NAME)_$(INDEX)
+	$(BIN_PATH)/$(PROJECT_NAME)_$(INDEX)
 
 run: $(foreach test_i, $(TESTS),  $(subst test,run, $(test_i)) )
 	@echo "done"

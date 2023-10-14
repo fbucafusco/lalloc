@@ -44,7 +44,7 @@ extern "C" {
 /* Project dependant configuration : the user should create this file in its project */
 #include "lalloc_config.h"
 
-#define LALLOC_VERSION                      0.10
+#define LALLOC_VERSION     020
 
 /* DEFAULT VALUES: can be changed in  lalloc_config.h =========================================================================== */
 
@@ -262,6 +262,6 @@ void lalloc_dtor( void* this_ );
 
 
 
-/* v0.10 */
+/* v0.20 */
 
 

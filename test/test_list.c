@@ -49,10 +49,10 @@ void test_list_related_1()
 
     LALLOC_IDX_TYPE removed = _block_remove( test_alloc.pool, &( test_alloc.dyn->flist ) );
 
-    /* SE REMOVIO EL ELEMENTO 0*/
+    /* element 0 was removed */
     TEST_ASSERT_EQUAL_INT( 0, removed );
 
-    /* LA LISTA QUEDO VACIA */
+    /* the list is empty */
     TEST_ASSERT_EQUAL_INT( LALLOC_IDX_INVALID, test_alloc.dyn->flist );
 }
 
@@ -70,8 +70,7 @@ void test_list_related_2()
     LALLOC_IDX_TYPE removed = _block_remove( test_alloc.pool, &( test_alloc.dyn->flist ) );
     LALLOC_IDX_TYPE added;
 
-    /* LA LISTA QUEDA VACIA */
-
+    /* the list is empty */
     memset( test_alloc.pool, 0x55, test_alloc.size );
 
     /* create 2 artificial blocks within the pool */
@@ -159,7 +158,6 @@ void test_list_related_3()
 
     lalloc_init( &test_alloc );
 
-    // LALLOC_IDX_TYPE removed = _block_remove ( test_alloc.pool,  & ( test_alloc.dyn->flist )  );
     LALLOC_IDX_TYPE added;
 
     /* list is empty */
@@ -231,6 +229,7 @@ void test_list_related_3()
     TEST_ASSERT_NULL( data );
     TEST_ASSERT_EQUAL_INT( 0, size );
 }
+
 #if 1
 /* join  */
 void test_list_join()
@@ -245,9 +244,7 @@ void test_list_join()
     LALLOC_DECLARE( test_alloc, nodes * ( lalloc_b_overhead_size + data_size ), 0 );
 
     lalloc_init( &test_alloc );
-
-    // LALLOC_IDX_TYPE added;
-
+ 
     /* list is empty */
 
     /*TODO REMOVE COMMENT both blocks, HEADER + DATA + FOOTER = 18 bytes */
@@ -262,8 +259,6 @@ void test_list_join()
         addreses[i] = addr;
         indexes[i] = addr - test_alloc.pool - lalloc_b_overhead_size;
     }
-
-    // LALLOC_IDX_TYPE removed;
 
     // remove the [1] node, then the [2] and join   //joins left
     lalloc_free( &test_alloc, addreses[1] );
@@ -304,6 +299,7 @@ void test_list_join()
     TEST_ASSERT_EQUAL( 8 * data_size + 7 * lalloc_b_overhead_size, lalloc_get_free_space( &test_alloc ) );
 }
 #endif
+
 /*
 TODO:
 test _block_list_find_by_ref
