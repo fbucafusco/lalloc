@@ -4,9 +4,13 @@
 #include "unity.h"
 #include "lalloc_abstraction.h"
 
-
+#ifndef LALLOC_ALIGNMENT
 #define LALLOC_ALIGNMENT               1
+#endif
+
+#ifndef LALLOC_MAX_BYTES
 #define LALLOC_MAX_BYTES               0xFFFF // 0xFFFFFFFF
+#endif
 
 /* ====================================================================================
     LALLOC_USE_OS

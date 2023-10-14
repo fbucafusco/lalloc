@@ -30,6 +30,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <time.h>
 #include "unity.h"
 #include "lalloc.h"
 #include "lalloc_priv.h"
@@ -37,19 +38,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "random_tools.h"
 #include "lalloc_abstraction.h"
 
+#define PRINT_RESULTS 0
 
 extern int isr_dis;
 
 typedef struct
 {
-    char *title;                   // Test descripion
-    uint32_t simulations_count;    //# of simulations per test
-    LALLOC_IDX_TYPE blocksize_min; // minimum size of the element to insert to the adt
-    LALLOC_IDX_TYPE blocksize_max; // maximum size of the element to insert to the adt
-    LALLOC_IDX_TYPE pool_size;     // pool size
+    char *title;                   // test description
+    uint32_t simulations_count;    // # of simulations
+    LALLOC_IDX_TYPE blocksize_min; // min size for each element to be written
+    LALLOC_IDX_TYPE blocksize_max; // max size for each element to be written
+    LALLOC_IDX_TYPE pool_size;     // memory pool size
 } tTestParams_In;
 
-/* estructuras */
 typedef struct
 {
     uint32_t efficiency_avrg; // average efficiency
@@ -57,28 +58,32 @@ typedef struct
     uint32_t num_bytes_written;
 } tTestParams_Out;
 
-/* This test:
-   - repeats "simulations_count" times the next procedure:
-     - fills all the pool with random size elements
-     - removes from the the half of the elements
-     - from the remaining # of elements, it removes the middle one.
-     - TODO: alternating even and odd # of bytes per element
-*/
+/**
+   @brief This test:
+            - repeats "simulations_count" times the next procedure:
+                - fills all the pool with random size elements
+                - removes from the the half of the elements
+                - from the remaining # of elements, it removes the middle one.
+                - TODO: alternating even and odd # of bytes per element
+
+   @param obj
+   @param params
+   @param paramsout
+ */
 void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *paramsout )
 {
-    isr_dis = 0;
     static uint32_t runcount = 0;
-
     uint32_t i;
     uint32_t j;
     LALLOC_IDX_TYPE current_charnum;
     LALLOC_IDX_TYPE given_size;
-
     uint8_t *p_mem;
-
     LALLOC_IDX_TYPE cant;
     char message[200];
 
+    srand( time( 0 ) );
+
+    isr_dis = 0;
     paramsout->num_bytes_written = 0;
     paramsout->num_allocs = 0;
 
@@ -87,13 +92,13 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
     for ( i = 0; i < params->simulations_count; i++ )
     {
-        /* fill the object */
+        /* fill the whole pool */
         while ( 1 )
         {
             /* get the available space */
             LALLOC_IDX_TYPE free = lalloc_get_free_space( obj );
 
-            /* it should be different than MEMQ_IDX_INVALID */
+            /* it should be different than LALLOC_IDX_INVALID */
             TEST_ASSERT_FALSE( LALLOC_IDX_INVALID == free );
             TEST_ASSERT_TRUE( isr_dis == 0 );
 
@@ -107,19 +112,15 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
             current_charnum = uint32_random_range( params->blocksize_min, params->blocksize_max );
 
             /* request memory space */
-            lalloc_alloc( obj, ( void** ) &p_mem, &given_size );
+            lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
 
             TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
             TEST_ASSERT_TRUE( isr_dis == 0 );
+            TEST_ASSERT_TRUE( given_size == free );
 
             if ( current_charnum > given_size )
             {
                 current_charnum = given_size / 2;
-            }
-
-            if ( current_charnum > free )
-            {
-                current_charnum = free / 2;
             }
 
             if ( current_charnum == 0 )
@@ -130,7 +131,9 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
             /* fill with random data. */
             random_byte_array( current_charnum, p_mem );
 
+#if PRINT_RESULTS == 1
             sprintf( message, "Iteration %u, Given byte #: %u written byte # %u", i, given_size, current_charnum );
+#endif
 
             lalloc_commit( obj, current_charnum );
 
@@ -140,6 +143,8 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
             paramsout->num_allocs++;
             paramsout->num_bytes_written += current_charnum;
         }
+
+        TEST_ASSERT_TRUE( lalloc_is_full(obj) );
 
         /* the free list should be empty, because the end condition of the loop  */
         if ( LALLOC_MIN_PAYLOAD_SIZE > 0 )
@@ -152,13 +157,12 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
         TEST_ASSERT_TRUE_MESSAGE( lalloc_sanity_check( obj ), message );
         TEST_ASSERT_TRUE( isr_dis == 0 );
         TEST_ASSERT_TRUE( num_allocs > 0 );
-        TEST_ASSERT_TRUE( isr_dis == 0 );
         /*
            if num_allocs = 1 the list is emptied.
            if num_allocs = 2 | 3 | 4 it removes the half # of elements
            if otherwise it removes the half # of elements + the middle one of the remaining elements
         */
-        int delete_central = 0;
+        bool delete_central = false;
         LALLOC_IDX_TYPE num_allocs_delete = 0;
 
         if ( num_allocs == 1 )
@@ -172,7 +176,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
         else if ( num_allocs > 4 )
         {
             num_allocs_delete = num_allocs / 2;
-            delete_central = 1;
+            delete_central = true;
         }
 
         /* free upo the oldest half */
@@ -180,9 +184,9 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
         for ( j = 0; j < num_allocs_delete; j++ )
         {
-            lalloc_get_n( obj, ( void** ) &p_mem, &cant, 0 );
+            lalloc_get_n( obj, ( void ** )&p_mem, &cant, 0 );
             TEST_ASSERT_TRUE( isr_dis == 0 );
-            lalloc_free( obj,  ( void* ) p_mem );
+            lalloc_free( obj, ( void * )p_mem );
             TEST_ASSERT_TRUE( isr_dis == 0 );
         }
 
@@ -192,21 +196,19 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
         {
             delete_central = ( num_allocs - num_allocs_delete ) / 2;
 
-            /* tambien libero uno del medio. */
             sprintf( message, "Iteration %u remain %u and removed %u", i, num_allocs - num_allocs_delete, delete_central );
 
-            lalloc_get_n( obj, ( void** ) &p_mem, &cant, delete_central );
+            lalloc_get_n( obj, ( void ** )&p_mem, &cant, delete_central );
             TEST_ASSERT_TRUE( isr_dis == 0 );
             TEST_ASSERT_NOT_NULL( p_mem );
 
-            lalloc_free( obj, ( void* ) p_mem );
+            lalloc_free( obj, ( void * )p_mem );
             TEST_ASSERT_TRUE( isr_dis == 0 );
             TEST_ASSERT_TRUE_MESSAGE( lalloc_sanity_check( obj ), message );
         }
     }
 
-
-
+#if PRINT_RESULTS == 1
     /* Final calculations and summary */
     float a;
     printf( "test %s run count %u\n", __FUNCTION__, runcount );
@@ -216,8 +218,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
     printf( "Processed bytes ........................ %0.2f kB\n", a );
     a = ( float )paramsout->num_bytes_written / paramsout->num_allocs;
     printf( "Mean element size ...................... %3.2f B\n", a );
-
-
+#endif
     runcount++;
 }
 
@@ -236,9 +237,17 @@ void test_random_1()
     params_in.simulations_count = 2000;
     params_in.blocksize_min = 10;
     params_in.blocksize_max = pool_size;
-    params_in.title = "test random";
+    params_in.title =  ( char * )__FUNCTION__;
 
     LALLOC_DECLARE( test_alloc, pool_size, 0 );
 
     random_test( &test_alloc, &params_in, &paramsout );
 }
+
+#ifndef STM32L475xx
+int main()
+{
+    RUN_TEST( test_random_1 );
+    return 0;
+}
+#endif

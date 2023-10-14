@@ -56,7 +56,7 @@ typedef struct
     LALLOC_IDX_TYPE pool_size;     // memory pool size
 } tTestParams_In;
 
-/* estructuras */
+
 typedef struct
 {
     uint32_t num_allocs;
@@ -176,10 +176,10 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
         // TEST_FREE_SPACE_VALIDATION( obj );
     }
 
+#if PRINT_RESULTS == 1
     /* final calculations and report */
     float a;
-
-#if PRINT_RESULTS == 1
+    printf( "test %s run count %u\n", __FUNCTION__, runcount );
     printf( "Simulations: ........................... %u\n", params->simulations_count );
     printf( "Buffer Size: ........................... %u B\n", params->pool_size );
     a = paramsout->num_bytes_written / 1024;
