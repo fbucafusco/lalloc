@@ -144,7 +144,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
             paramsout->num_bytes_written += current_charnum;
         }
 
-        TEST_ASSERT_TRUE( lalloc_is_full(obj) );
+        TEST_ASSERT_TRUE( lalloc_is_full( obj ) );
 
         /* the free list should be empty, because the end condition of the loop  */
         if ( LALLOC_MIN_PAYLOAD_SIZE > 0 )
@@ -231,11 +231,17 @@ void test_random_1()
     tTestParams_In params_in;
     tTestParams_Out paramsout;
 
-    uint32_t pool_size = uint32_random_range( 50, 30000 );
+#if LALLOC_MAX_BYTES<=0xFF
+    uint32_t max = 0xFF;
+#else
+    uint32_t max = 30000;
+#endif
+
+    uint32_t pool_size = uint32_random_range( 100, max );
 
     params_in.pool_size = pool_size;
-    params_in.simulations_count = 2000;
-    params_in.blocksize_min = 10;
+    params_in.simulations_count = 10000;
+    params_in.blocksize_min = 1;
     params_in.blocksize_max = pool_size;
     params_in.title =  ( char * )__FUNCTION__;
 

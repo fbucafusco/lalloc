@@ -49,7 +49,7 @@ extern "C" {
 /**
    @brief LALLOC_FREE_ANY
           Defines the behavior of lalloc_free.
-          1: addr field could be ANY address of the user granded memory area with a range from  the start or the block to start + committed size.
+          1: addr field could be ANY address of memory granted to the user with a range from  the start or the block to start + committed size.
           0: addr MUST be the starting area of the memory area given to the user with lalloc_alloc
  */
 #ifndef LALLOC_FREE_ANY

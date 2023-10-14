@@ -5,11 +5,11 @@
 #include "lalloc_abstraction.h"
 
 #ifndef LALLOC_ALIGNMENT
-#define LALLOC_ALIGNMENT               1
+#define LALLOC_ALIGNMENT   1
 #endif
 
 #ifndef LALLOC_MAX_BYTES
-#define LALLOC_MAX_BYTES               0xFFFF // 0xFFFFFFFF
+#define LALLOC_MAX_BYTES   0xFFFF
 #endif
 
 /* ====================================================================================
@@ -18,12 +18,12 @@
     1: THE LIBRARY WILL BE USED IN A MULTITASKING OS.
     0: THE LIBRARY WILL BE USED IN A COOPERATIVE SYSTEM OR IN WITHIN JUST ONLY ON TASK IN AN OS.
    ==================================================================================== */
-#define LALLOC_USE_OS                   1
+#define LALLOC_USE_OS      1
 
 /* ===============================================================================================================================================
    ASSERT
    =============================================================================================================================================== */
-#define LIB_DEBUG_LEVEL 1
+#define LIB_DEBUG_LEVEL    1
 
 #if LIB_DEBUG_LEVEL==-1
 #include <assert.h>

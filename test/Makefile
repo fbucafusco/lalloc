@@ -15,23 +15,19 @@ COVERAGE_PATH = $(MAKEFILE_DIR)coverage
 #includes all the project definitions
 include project.mk
 
-#Flags que se le pasa al compilador (pueden agregarse en project.mk)
+#compiler flags
 CFLAGS += $(foreach inc, $(INC_FILES), -I$(inc) )
 CFLAGS += -D_WIN32 -ggdb -Wall -fprofile-arcs -ftest-coverage
 
-#Flags que se le pasa al linker  (pueden agregarse en project.mk)
+#linke flags
 LFLAGS +=  -lgcov
 
 INDEX = ""
-
-#regla que linkea luego de tener los requisitos
-#all: info objs
-#	gcc $(OUT_PATH)*.o $(LFLAGS) -o $(PROJECT_NAME)
  
 #:PHONY: all  
 all: info $(foreach test, $(TESTS), $(test) )
 
-#regla que compila cada .c por serparado en un .o
+#rule that compiles each .c into a .o
 .PHONY:  option%
 option%:
 	@echo '----------------------------------------------------------- OPTION - '	
@@ -68,7 +64,7 @@ test%:
 	@echo "Linking "$<	
 	gcc $(OUT_PATH)$(INDEX)/*.o $(LFLAGS) -o $(BIN_PATH)/$(PROJECT_NAME)_$(INDEX)
 
-#regla que imprime simplemente la informacion
+#rule that prints information
 .PHONY: info
 info:
 	@echo '---------------------------------------------------------------------'
@@ -107,5 +103,3 @@ coverage:
 	@genhtml ./coverage/total_coverage.info --output-directory ./coverage/html
 	@echo "Coverage reports generated in "./coverage/html
 
-#a: 	
-#	$(MAKE) info

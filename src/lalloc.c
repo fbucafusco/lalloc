@@ -255,7 +255,7 @@ void _block_list_get_n( uint8_t *pool, LALLOC_IDX_TYPE list, LALLOC_IDX_TYPE n, 
 
             if ( next == list )
             {
-                /* list wraparround: not found */
+                /* list wrap around: not found */
                 break;
             }
 
@@ -505,7 +505,6 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE new_node )
     }
 
     // LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, new_node, next_phy );
-
     LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, new_node, ( next_phy - new_node - lalloc_b_overhead_size ) | LALLOC_FREE_NODE_MASK );
 
     return new_node;
@@ -516,7 +515,7 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE new_node )
            This is an internal method for lalloc operation
           NOT THREAD SAFE
    @param obj
-    @param addr
+   @param addr
    @return int
  */
 bool _block_move_from_alloc_to_free( LALLOC_T *obj, void *addr )
@@ -526,8 +525,8 @@ bool _block_move_from_alloc_to_free( LALLOC_T *obj, void *addr )
     if ( obj->dyn->alist != LALLOC_IDX_INVALID )
     {
         LALLOC_IDX_TYPE removed;
-        /* Remove the addr from the alocated list. */
 
+        /* Remove the addr from the alocated list. */
         LALLOC_IDX_TYPE idx = _block_list_find_by_ref( obj->pool, obj->dyn->alist, ( uint8_t * )addr );
 
         if ( LALLOC_IDX_INVALID != idx )
@@ -620,21 +619,11 @@ void lalloc_clear( LALLOC_T *obj )
     obj->dyn->flist = 0;
     obj->dyn->alist = LALLOC_IDX_INVALID;
     obj->dyn->alloc_block = LALLOC_IDX_INVALID;
-
     obj->dyn->allocated_blocks = 0;
 
     /* initialice the only free node available (flist) */
-    LALLOC_SET_BLOCK_NEXT_FROMPOOL( obj->pool, obj->dyn->flist, obj->dyn->flist );
-    LALLOC_SET_BLOCK_PREV_FROMPOOL( obj->pool, obj->dyn->flist, obj->dyn->flist );
-    //  LALLOC_SET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, 0, obj->size );
-    LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL( obj->pool, obj->dyn->flist, LALLOC_IDX_INVALID );
-
-    LALLOC_IDX_TYPE block_size = obj->size - lalloc_b_overhead_size;
-
-    /* the block is free*/
-    block_size |= LALLOC_FREE_NODE_MASK;
-
-    LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, 0, block_size );
+     LALLOC_IDX_TYPE block_size = obj->size - lalloc_b_overhead_size;
+    _block_set( obj->pool, obj->dyn->flist, block_size, obj->dyn->flist, obj->dyn->flist, LALLOC_FREE_NODE_MASK );
 
     LALLOC_CRITICAL_END;
 }
