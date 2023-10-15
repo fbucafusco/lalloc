@@ -713,7 +713,9 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
     /* all the commited user memory areas are aligned as well */
     size = LALLOC_ALIGN_ROUND_UP( size );
 
+#if LALLOC_MIN_PAYLOAD_SIZE > 0
     if ( size >= LALLOC_MIN_PAYLOAD_SIZE )
+#endif
     {
         LALLOC_CRITICAL_START;
 
@@ -741,6 +743,7 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
                 LALLOC_IDX_TYPE new_block_size = node_size - size;
 
                 /* removes the first node in the free list and modify flist to point to the next larger block */
+                // removed = _block_remove( obj->pool , &( obj->dyn->flist ) );
                 removed = _block_list_remove_block( obj->pool, &( obj->dyn->flist ), obj->dyn->alloc_block );
 
                 if ( new_block_size < lalloc_b_overhead_size + LALLOC_MIN_PAYLOAD_SIZE )
@@ -815,14 +818,15 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
             /* there is no previous allocation */
             rv = false;
         }
+        LALLOC_CRITICAL_END;
     }
+#if LALLOC_MIN_PAYLOAD_SIZE > 0
     else
     {
         /* the commited size is less than de minimum */
         rv = false;
     }
-
-    LALLOC_CRITICAL_END;
+#endif
 
     return rv;
 }
