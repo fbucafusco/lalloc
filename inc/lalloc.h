@@ -104,44 +104,20 @@ extern "C" {
    @brief   LALLOC_NO_FLAGS
             Default value for passing to the LALLOC_DECLARE macro if no behaviors are needed for a certain instance.
  */
-#define LALLOC_NO_FLAGS                     0
+#define LALLOC_NO_FLAGS                0
 
 /**
    @brief   Based on LALLOC_MAX_BYTES it defines the data type for the indexing of bytes and blocks
  */
 #if defined(LALLOC_MAX_BYTES) && !defined(LALLOC_IDX_TYPE)
 #if( LALLOC_MAX_BYTES<=0xFF )
-#define LALLOC_IDX_TYPE                     uint8_t
+#define LALLOC_IDX_TYPE                uint8_t
 #elif( LALLOC_MAX_BYTES<=0xFFFF )
-#define LALLOC_IDX_TYPE                     uint16_t
-#elif( LALLOC_MAX_BYTES<=0xFFFFFFFF )
-#define LALLOC_IDX_TYPE                     uint32_t
+#define LALLOC_IDX_TYPE                uint16_t
+#elif( LALLOC_MAX_BYTES<=0xFFFFFFFF )  
+#define LALLOC_IDX_TYPE                uint32_t
 #endif
 #endif
-
-/**
-   @brief General macros for adjusting sizes and addresses
-    */
-#if LALLOC_ALIGN_BOUNDRIES==1
-#define LALLOC_ALIGN_ROUND_UP_(TYPE,SIZE,ALIGNMENT)    (   ( TYPE ) ( (SIZE) + (  ( TYPE )   ( (ALIGNMENT) - 1 ) ) ) & ~(  ( TYPE )  (ALIGNMENT) - 1 ))
-#define LALLOC_ALIGN_ROUND_UP(SIZE)                    LALLOC_ALIGN_ROUND_UP_( LALLOC_IDX_TYPE , SIZE , LALLOC_ALIGNMENT )
-#else
-#define LALLOC_ALIGN_ROUND_UP(SIZE)          (SIZE)
-#endif
-
-/**
-   @brief structure for each node's block
- */
-#pragma pack(1)
-typedef struct
-{
-    LALLOC_IDX_TYPE prev;       /* Logical index to the previous block in the list     */
-    LALLOC_IDX_TYPE next;       /* Logical index to the next block in the list         */
-    LALLOC_IDX_TYPE prev_phys;  /* Physical index to the previous block in the pool    */
-    //LALLOC_IDX_TYPE next_phys;  /* Physical index to the next block in the pool   NOT NEEDED     */
-    LALLOC_IDX_TYPE blk_size;   /* playload block's size                               */
-} lalloc_block_t;
-#pragma pack()
 
 /**
    @brief   LALLOC_IDX_INVALID
@@ -157,6 +133,16 @@ typedef struct
 #define LALLOC_POOL_TYPE                uint32_t
 #else
 #error "LALLOC_POOL_TYPE: ALIGNMENT not supported"
+#endif
+
+/**
+   @brief General macros for adjusting sizes and addresses
+*/
+#if LALLOC_ALIGN_BOUNDRIES==1
+#define LALLOC_ALIGN_ROUND_UP_(TYPE,SIZE,ALIGNMENT)    (( TYPE ) ( (SIZE) + (  ( TYPE )   ( (ALIGNMENT) - 1 ) ) ) & ~(  ( TYPE )  (ALIGNMENT) - 1 ))
+#define LALLOC_ALIGN_ROUND_UP(SIZE)                    LALLOC_ALIGN_ROUND_UP_( LALLOC_IDX_TYPE , SIZE , LALLOC_ALIGNMENT )
+#else
+#define LALLOC_ALIGN_ROUND_UP(SIZE)                    (SIZE)
 #endif
 
 /**

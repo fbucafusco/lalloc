@@ -118,6 +118,21 @@ extern "C" {
 #define LALLOC_SET_BLOCK_PREV(POOL,INDEX, PREV)       LALLOC_BLOCK_PREV( (POOL), (INDEX) ) = (PREV)
 #define LALLOC_SET_BLOCK_PREVPHYS(POOL, INDEX, PREV)  LALLOC_BLOCK_PREVPHYS(POOL,INDEX) = (PREV)
 
+
+/**
+   @brief structure for each node's block
+ */
+#pragma pack(1)
+typedef struct
+{
+    LALLOC_IDX_TYPE prev;       /* Logical index to the previous block in the list     */
+    LALLOC_IDX_TYPE next;       /* Logical index to the next block in the list         */
+    LALLOC_IDX_TYPE prev_phys;  /* Physical index to the previous block in the pool    */
+    //LALLOC_IDX_TYPE next_phys;  /* Physical index to the next block in the pool   NOT NEEDED     */
+    LALLOC_IDX_TYPE blk_size;   /* playload block's size                               */
+} lalloc_block_t;
+#pragma pack()
+
 /* private functions exposed to tests */
 void _block_list_add_first ( uint8_t* pool, LALLOC_IDX_TYPE* list_idx, LALLOC_IDX_TYPE block_idx );
 void _block_set_data ( uint8_t* pool, LALLOC_IDX_TYPE  block_idx, uint8_t* addr, LALLOC_IDX_TYPE size );
