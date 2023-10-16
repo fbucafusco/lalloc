@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "unity.h"
 #include "lalloc.h"
 #include "lalloc_priv.h"
+#include "lalloc_tools.h"
 #include "malloc_replace.h"
 #include "lalloc_abstraction.h"
 
@@ -75,10 +76,13 @@ void test_lalloc_1()
     for ( i = 0; i < 5; i++ )
     {
         lalloc_alloc( &test_alloc, ( void ** )&addresses[i], &size );
+        TEST_ASSERT_TRUE( lalloc_sanity_check( &test_alloc ) );
 
         memcpy( addresses[i], text_arr[i], size_arr[i] );
 
         lalloc_commit( &test_alloc, strlen( text_arr[i] ) );
+        TEST_ASSERT_TRUE( lalloc_sanity_check( &test_alloc ) );
+
     }
 
     /* there shouldn't be any free node */
@@ -86,7 +90,10 @@ void test_lalloc_1()
 
     /* free 2 "middle" nodes */
     lalloc_free( &test_alloc, addresses[2] );
+    TEST_ASSERT_TRUE( lalloc_sanity_check( &test_alloc ) );
+
     lalloc_free( &test_alloc, addresses[3] );
+    TEST_ASSERT_TRUE( lalloc_sanity_check( &test_alloc ) );
 
     /* ALIST is build as a LIFO */
     _block_list_get_n( test_alloc.pool, test_alloc.dyn->alist, 2, &data, &size );
@@ -364,36 +371,42 @@ void test_lalloc_4a()
     const LALLOC_IDX_TYPE elment_count = 4;
     const LALLOC_IDX_TYPE elment_size = 10;
     const LALLOC_IDX_TYPE pool_size = LALLOC_ALIGN_ROUND_UP( elment_count * ( elment_size + lalloc_b_overhead_size ) );
+    int scale = pool_size;
 
     LALLOC_DECLARE( test_alloc, pool_size, 0 );
 
     lalloc_init( &test_alloc );
 
     lalloc_alloc( &test_alloc, ( void ** )&pData0, &size );
+    // lalloc_print_graph(&test_alloc, 'A', scale);
 
     TEST_ASSERT_EQUAL( LALLOC_IDX_INVALID, test_alloc.dyn->alist );
     TEST_ASSERT_EQUAL( 0, test_alloc.dyn->flist );
     TEST_ASSERT_EQUAL( 0, test_alloc.dyn->alloc_block );
 
     lalloc_commit( &test_alloc, elment_size );
+    // lalloc_print_graph(&test_alloc, 'C', scale);
 
     TEST_ASSERT_EQUAL( 0, test_alloc.dyn->alist );
     TEST_ASSERT_EQUAL( elment_size + lalloc_b_overhead_size, test_alloc.dyn->flist );
     TEST_ASSERT_EQUAL( LALLOC_IDX_INVALID, test_alloc.dyn->alloc_block );
 
     lalloc_alloc( &test_alloc, ( void ** )&pData1, &size );
+    // lalloc_print_graph(&test_alloc, 'A', scale);
 
     TEST_ASSERT_EQUAL( 0, test_alloc.dyn->alist );
     TEST_ASSERT_EQUAL( elment_size + lalloc_b_overhead_size, test_alloc.dyn->flist );
     TEST_ASSERT_EQUAL( elment_size + lalloc_b_overhead_size, test_alloc.dyn->alloc_block );
 
     lalloc_free( &test_alloc, pData0 );
+    // lalloc_print_graph(&test_alloc, 'F', scale);
 
     TEST_ASSERT_EQUAL( LALLOC_IDX_INVALID, test_alloc.dyn->alist );
     TEST_ASSERT_EQUAL( elment_size + lalloc_b_overhead_size, test_alloc.dyn->flist );
     TEST_ASSERT_EQUAL( elment_size + lalloc_b_overhead_size, test_alloc.dyn->alloc_block );
 
     lalloc_commit( &test_alloc, elment_size );
+    // lalloc_print_graph(&test_alloc, 'C', scale);
 
     TEST_ASSERT_EQUAL( elment_size + lalloc_b_overhead_size, test_alloc.dyn->alist );
     TEST_ASSERT_EQUAL( 2 * ( elment_size + lalloc_b_overhead_size ), test_alloc.dyn->flist ); // the commit optimized the free list

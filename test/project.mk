@@ -22,6 +22,7 @@ TESTS= test1 test2 test3 test4 test5 test6 test7
 
 #TEST1
 SRC_FILES_T1	+=$(TESTS_BASE_PATH)test_basic.c
+SRC_FILES_T1	+=$(TESTS_BASE_PATH)support/lalloc_tools.c
 INC_FILES_T1	=
 CFLAGS_T1		=
 
