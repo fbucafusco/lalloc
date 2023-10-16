@@ -34,7 +34,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lalloc.h"
 #include "lalloc_priv.h"
 
-LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_block_size = LALLOC_NODE_HEAD_SIZE;
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_b_overhead_size = LALLOC_NODE_HEAD_SIZE;
 
 #ifndef LALLOC_INLINE 
@@ -45,10 +44,10 @@ LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_b_overhead_size = LALLOC_NODE_HEAD_SI
 /* sets the block information at the selected pool and block index. */
 void _block_set( uint8_t *pool, LALLOC_IDX_TYPE idx, LALLOC_IDX_TYPE size, LALLOC_IDX_TYPE next, LALLOC_IDX_TYPE prev, LALLOC_IDX_TYPE flags )
 {
-    LALLOC_SET_BLOCK_NEXT_FROMPOOL_( pool, idx, next );
-    LALLOC_SET_BLOCK_PREV_FROMPOOL_( pool, idx, prev );
-    LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL_( pool, idx, LALLOC_IDX_INVALID );
-    LALLOC_SET_BLOCK_SIZE_FROMPOOL_( pool, idx, size | flags );
+    LALLOC_SET_BLOCK_NEXT( pool, idx, next );
+    LALLOC_SET_BLOCK_PREV( pool, idx, prev );
+    LALLOC_SET_BLOCK_PREVPHYS( pool, idx, LALLOC_IDX_INVALID );
+    LALLOC_SET_BLOCK_SIZE( pool, idx, size | flags );
 }
 
 /**
@@ -61,8 +60,8 @@ void _block_set( uint8_t *pool, LALLOC_IDX_TYPE idx, LALLOC_IDX_TYPE size, LALLO
  */
 void _block_get_data( uint8_t *pool, LALLOC_IDX_TYPE block_idx, uint8_t **addr, LALLOC_IDX_TYPE *size )
 {
-    LALLOC_GET_BLOCK_SIZE_FROMPOOL_( pool, block_idx, *size );
-    LALLOC_GET_BLOCK_DATA_FROMPOOL_( pool, block_idx, *addr );
+    LALLOC_GET_BLOCK_SIZE( pool, block_idx, *size );
+    LALLOC_GET_BLOCK_DATA( pool, block_idx, *addr );
 
     /* clear the control flags */
     ( *size ) &= ~LALLOC_FREE_NODE_MASK;
@@ -86,8 +85,8 @@ LALLOC_IDX_TYPE _block_remove( uint8_t *pool, LALLOC_IDX_TYPE *idx )
     LALLOC_IDX_TYPE next;
     LALLOC_IDX_TYPE prev;
 
-    LALLOC_GET_BLOCK_NEXT_FROMPOOL_( pool, ( *idx ), next );
-    LALLOC_GET_BLOCK_PREV_FROMPOOL_( pool, ( *idx ), prev );
+    LALLOC_GET_BLOCK_NEXT( pool, ( *idx ), next );
+    LALLOC_GET_BLOCK_PREV( pool, ( *idx ), prev );
 
     LALLOC_ASSERT( ( *idx ) != LALLOC_IDX_INVALID );
 
@@ -105,8 +104,8 @@ LALLOC_IDX_TYPE _block_remove( uint8_t *pool, LALLOC_IDX_TYPE *idx )
     else
     {
         /* the list has more than one element */
-        LALLOC_SET_BLOCK_NEXT_FROMPOOL_( pool, prev, next );
-        LALLOC_SET_BLOCK_PREV_FROMPOOL_( pool, next, prev );
+        LALLOC_SET_BLOCK_NEXT( pool, prev, next );
+        LALLOC_SET_BLOCK_PREV( pool, next, prev );
 
         /* mark the list as the next node  */
         ( *idx ) = next;
@@ -143,7 +142,7 @@ LALLOC_IDX_TYPE _block_list_find_by_idx( uint8_t *pool, LALLOC_IDX_TYPE list, LA
         if ( condition )
         {
             /* get the node size in order to compute the top boundry */
-            LALLOC_GET_BLOCK_SIZE_FROMPOOL_( pool, next, size );
+            LALLOC_GET_BLOCK_SIZE( pool, next, size );
             condition = ( idx < LALLOC_NEXT_BLOCK_IDX( next, size ) );
         }
 
@@ -153,7 +152,7 @@ LALLOC_IDX_TYPE _block_list_find_by_idx( uint8_t *pool, LALLOC_IDX_TYPE list, LA
             return next;
         }
 
-        LALLOC_GET_BLOCK_NEXT_FROMPOOL_( pool, next, next );
+        LALLOC_GET_BLOCK_NEXT( pool, next, next );
 
         if ( next == list )
         {
@@ -202,11 +201,11 @@ LALLOC_IDX_TYPE _block_list_find_by_ref( uint8_t *pool, LALLOC_IDX_TYPE list, ui
     /* is the list the allocated list or the free list ? */
 
     /* gets the free bit mask of the firs node on the list .  */
-    LALLOC_GET_BLOCK_SIZE_FROMPOOL_( pool, list, size );
+    LALLOC_GET_BLOCK_SIZE( pool, list, size );
     node_mask1 = size & LALLOC_FREE_NODE_MASK;
 
     /* gets the free bit mask of the node to search .  */
-    LALLOC_GET_BLOCK_SIZE_FROMPOOL_( pool, list, size );
+    LALLOC_GET_BLOCK_SIZE( pool, list, size );
     node_mask2 = size & LALLOC_FREE_NODE_MASK;
 
     if ( node_mask1 == node_mask2 )
@@ -255,7 +254,7 @@ void _block_list_get_n( uint8_t *pool, LALLOC_IDX_TYPE list, LALLOC_IDX_TYPE n, 
                 return;
             }
 
-            LALLOC_GET_BLOCK_NEXT_FROMPOOL_( pool, next, next );
+            LALLOC_GET_BLOCK_NEXT( pool, next, next );
 
             if ( next == list )
             {
@@ -291,18 +290,18 @@ void _block_list_add_first( uint8_t *pool, LALLOC_IDX_TYPE *list_idx, LALLOC_IDX
     if ( LALLOC_IDX_INVALID == ( *list_idx ) )
     {
         /* if the list is empty, then the node is the first and must be added */
-        LALLOC_SET_BLOCK_NEXT_FROMPOOL_( pool, block_idx, block_idx );
-        LALLOC_SET_BLOCK_PREV_FROMPOOL_( pool, block_idx, block_idx );
+        LALLOC_SET_BLOCK_NEXT( pool, block_idx, block_idx );
+        LALLOC_SET_BLOCK_PREV( pool, block_idx, block_idx );
     }
     else
     {
         /* the list has, at least, one node. */
-        LALLOC_GET_BLOCK_PREV_FROMPOOL_( pool, ( *list_idx ), prev );
+        LALLOC_GET_BLOCK_PREV( pool, ( *list_idx ), prev );
 
-        LALLOC_SET_BLOCK_NEXT_FROMPOOL_( pool, block_idx, ( *list_idx ) );
-        LALLOC_SET_BLOCK_PREV_FROMPOOL_( pool, block_idx, prev );
-        LALLOC_SET_BLOCK_NEXT_FROMPOOL_( pool, prev, block_idx );
-        LALLOC_SET_BLOCK_PREV_FROMPOOL_( pool, ( *list_idx ), block_idx );
+        LALLOC_SET_BLOCK_NEXT( pool, block_idx, ( *list_idx ) );
+        LALLOC_SET_BLOCK_PREV( pool, block_idx, prev );
+        LALLOC_SET_BLOCK_NEXT( pool, prev, block_idx );
+        LALLOC_SET_BLOCK_PREV( pool, ( *list_idx ), block_idx );
     }
 
     /* the list is updated to the added node */
@@ -334,14 +333,14 @@ void _block_list_add_sorted( uint8_t *pool, LALLOC_IDX_TYPE *list_idx, LALLOC_ID
         LALLOC_IDX_TYPE size_curr;
         LALLOC_IDX_TYPE size_new;
 
-        LALLOC_GET_BLOCK_SIZE_FROMPOOL_( pool, block_idx, size_new );
+        LALLOC_GET_BLOCK_SIZE( pool, block_idx, size_new );
         size_new &= ~LALLOC_FREE_NODE_MASK; // Clear the control flags
 
         LALLOC_IDX_TYPE prev = LALLOC_IDX_INVALID;
 
         while ( 1 )
         {
-            LALLOC_GET_BLOCK_SIZE_FROMPOOL_( pool, current, size_curr );
+            LALLOC_GET_BLOCK_SIZE( pool, current, size_curr );
 
             /* clear the control flags */
             size_curr &= ~LALLOC_FREE_NODE_MASK;
@@ -352,7 +351,7 @@ void _block_list_add_sorted( uint8_t *pool, LALLOC_IDX_TYPE *list_idx, LALLOC_ID
             }
 
             prev = current;
-            LALLOC_GET_BLOCK_NEXT_FROMPOOL_( pool, current, current );
+            LALLOC_GET_BLOCK_NEXT( pool, current, current );
 
             if ( current == *list_idx )
             {
@@ -426,8 +425,8 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE orphan_node
 {
     LALLOC_IDX_TYPE prev_phy;
     LALLOC_IDX_TYPE next_phy;
-    LALLOC_GET_BLOCK_PREVPHYS_FROMPOOL( obj->pool, orphan_node, prev_phy );
-    LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, orphan_node, next_phy );
+    LALLOC_GET_BLOCK_PREVPHYS( obj->pool, orphan_node, prev_phy );
+    LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, orphan_node, next_phy );
 
     /*
         |           |DDDDDDDDTTTTT|DDDDDDDDDDDD|
@@ -440,7 +439,7 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE orphan_node
         LALLOC_IDX_TYPE size;
 
         /* obtains the size of the previous physical block  */
-        LALLOC_GET_BLOCK_SIZE_FROMPOOL( obj->pool, prev_phy, size );
+        LALLOC_GET_BLOCK_SIZE( obj->pool, prev_phy, size );
 
         if ( size & LALLOC_FREE_NODE_MASK )
         {
@@ -464,7 +463,7 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE orphan_node
         LALLOC_IDX_TYPE size;
 
         /* get the previous block's size */
-        LALLOC_GET_BLOCK_SIZE_FROMPOOL( obj->pool, next_phy, size );
+        LALLOC_GET_BLOCK_SIZE( obj->pool, next_phy, size );
 
         if ( size & LALLOC_FREE_NODE_MASK )
         {
@@ -472,7 +471,7 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE orphan_node
             LALLOC_IDX_TYPE temp = _block_list_remove_block( obj->pool, &( obj->dyn->flist ), next_phy );
 
             /* ovewrite next physical */
-            LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, temp, next_phy );
+            LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, temp, next_phy );
         }
         else
         {
@@ -487,10 +486,10 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE orphan_node
     /* repair the previous physical of the next. */
     if ( obj->size != next_phy )
     {
-        LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL( obj->pool, next_phy, orphan_node );
+        LALLOC_SET_BLOCK_PREVPHYS( obj->pool, next_phy, orphan_node );
     }
 
-    LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, orphan_node, ( next_phy - orphan_node - lalloc_b_overhead_size ) | LALLOC_FREE_NODE_MASK );
+    LALLOC_SET_BLOCK_SIZE( obj->pool, orphan_node, ( next_phy - orphan_node - lalloc_b_overhead_size ) | LALLOC_FREE_NODE_MASK );
 
     return orphan_node;
 }
@@ -642,7 +641,7 @@ void lalloc_alloc( LALLOC_T *obj, void **addr, LALLOC_IDX_TYPE *size )
         _block_get_data( obj->pool, obj->dyn->flist, ( uint8_t ** )addr, size );
 
         /* when an allocation takes place, the block is mark as not free (without the bit set) */
-        LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, obj->dyn->flist, *size );
+        LALLOC_SET_BLOCK_SIZE( obj->pool, obj->dyn->flist, *size );
 
         obj->dyn->alloc_block = obj->dyn->flist;
     }
@@ -668,12 +667,12 @@ void lalloc_alloc_revert( LALLOC_T *obj )
     LALLOC_IDX_TYPE size;
     if ( obj->dyn->flist != LALLOC_IDX_INVALID )
     {
-        LALLOC_GET_BLOCK_SIZE_FROMPOOL( obj->pool, obj->dyn->flist, size );
+        LALLOC_GET_BLOCK_SIZE( obj->pool, obj->dyn->flist, size );
 
         /* the block */
         size |= LALLOC_FREE_NODE_MASK;
 
-        LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, obj->dyn->flist, size );
+        LALLOC_SET_BLOCK_SIZE( obj->pool, obj->dyn->flist, size );
 
         obj->dyn->alloc_block = LALLOC_IDX_INVALID;
     }
@@ -707,7 +706,7 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
             LALLOC_IDX_TYPE node_size;
 
             /* SIZE VALIDATION */
-            LALLOC_GET_BLOCK_SIZE_FROMPOOL( obj->pool, obj->dyn->alloc_block, node_size );
+            LALLOC_GET_BLOCK_SIZE( obj->pool, obj->dyn->alloc_block, node_size );
 
             LALLOC_ASSERT( ( node_size & LALLOC_FREE_NODE_MASK ) == 0 );
 
@@ -737,7 +736,7 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
                 }
 
                 /* set the new size of the node with the provided size*/
-                LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, orphan_idx, size );
+                LALLOC_SET_BLOCK_SIZE( obj->pool, orphan_idx, size );
 
                 /* add the node to allocated list */
                 _block_list_add_first( obj->pool, &( obj->dyn->alist ), orphan_idx );
@@ -751,18 +750,18 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
                     new_block_size = new_block_size - lalloc_b_overhead_size;
 
                     /* sets the size of the commited block */
-                    LALLOC_SET_BLOCK_SIZE_FROMPOOL( obj->pool, new_node_idx, new_block_size | LALLOC_FREE_NODE_MASK );
+                    LALLOC_SET_BLOCK_SIZE( obj->pool, new_node_idx, new_block_size | LALLOC_FREE_NODE_MASK );
 
                     /* next physical to the new node */
-                    LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL( obj->pool, new_node_idx, next_physical );
+                    LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, new_node_idx, next_physical );
 
                     /* set the previous phy to the new block */
-                    LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL( obj->pool, new_node_idx, orphan_idx );
+                    LALLOC_SET_BLOCK_PREVPHYS( obj->pool, new_node_idx, orphan_idx );
 
                     if ( next_physical != obj->size )
                     {
                         /* if the next phy of the removed block is not the boundry, set the previous phy of it */
-                        LALLOC_SET_BLOCK_PREVPHYS_FROMPOOL( obj->pool, next_physical, new_node_idx );
+                        LALLOC_SET_BLOCK_PREVPHYS( obj->pool, next_physical, new_node_idx );
                     }
 
                     /* This operation only make sense if the user must to alloc then free nodes before commiting the allocated space. */
@@ -838,9 +837,9 @@ bool lalloc_free_first( LALLOC_T *obj )
 
     if ( obj->dyn->alist != LALLOC_IDX_INVALID )
     {
-        LALLOC_GET_BLOCK_PREV_FROMPOOL_( obj->pool, obj->dyn->alist, idx );
+        LALLOC_GET_BLOCK_PREV( obj->pool, obj->dyn->alist, idx );
 
-        ( idx ) = LALLOC_BLOCK_PREV_FROMPOOL__( obj->pool, obj->dyn->alist );
+        ( idx ) = LALLOC_BLOCK_PREV( obj->pool, obj->dyn->alist );
 
         idx += lalloc_b_overhead_size;
 

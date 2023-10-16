@@ -3,7 +3,6 @@
 
 /* internal private data from lalloc.c */
 extern const LALLOC_IDX_TYPE lalloc_b_overhead_size;
-extern const LALLOC_IDX_TYPE lalloc_block_size;
 
 /* TEST PURPOSES ONLY
    It saves data into the data field of the block  */
@@ -12,7 +11,7 @@ void _block_set_data( uint8_t *pool, LALLOC_IDX_TYPE block_idx, uint8_t *addr, L
     LALLOC_IDX_TYPE block_size;
     uint8_t *pdataDest;
 
-    LALLOC_GET_BLOCK_SIZE_FROMPOOL_( pool, block_idx, block_size );
+    LALLOC_GET_BLOCK_SIZE( pool, block_idx, block_size );
 
     /* limit the length of the data */
     if ( block_size < size )
@@ -20,7 +19,7 @@ void _block_set_data( uint8_t *pool, LALLOC_IDX_TYPE block_idx, uint8_t *addr, L
         size = block_size;
     }
 
-    LALLOC_GET_BLOCK_DATA_FROMPOOL_( pool, block_idx, pdataDest );
+    LALLOC_GET_BLOCK_DATA( pool, block_idx, pdataDest );
 
     memcpy( pdataDest, addr, size );
 }
@@ -52,14 +51,14 @@ void lalloc_measure_framgentation( LALLOC_T *obj, float *sqbase, float *average_
         {
             LALLOC_IDX_TYPE size;
 
-            LALLOC_GET_BLOCK_SIZE_FROMPOOL_( obj->pool, node, size );
+            LALLOC_GET_BLOCK_SIZE( obj->pool, node, size );
             size &= ~LALLOC_FREE_NODE_MASK;
 
             sum += size;
             sum2 += size * size;
             n++;
 
-            LALLOC_GET_BLOCK_NEXT_FROMPOOL( obj->pool, node, node );
+            LALLOC_GET_BLOCK_NEXT( obj->pool, node, node );
             if ( node == obj->dyn->flist )
             {
                 break;
@@ -108,8 +107,8 @@ void lalloc_print_graph( LALLOC_T *obj, char last, uint32_t scale )
     {
         while ( 1 )
         {
-            LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL_( obj->pool, idx, next_phy );
-            LALLOC_GET_BLOCK_SIZE_FROMPOOL_( obj->pool, idx, block_size );
+            LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, idx, next_phy );
+            LALLOC_GET_BLOCK_SIZE( obj->pool, idx, block_size );
 
             if ( block_size & LALLOC_FREE_NODE_MASK )
             {
@@ -204,8 +203,8 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
     /* forward validation */
     while ( 1 )
     {
-        LALLOC_GET_BLOCK_NEXTPHYS_FROMPOOL_( obj->pool, idx, next_phy );
-        LALLOC_GET_BLOCK_SIZE_FROMPOOL_( obj->pool, idx, size );
+        LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, idx, next_phy );
+        LALLOC_GET_BLOCK_SIZE( obj->pool, idx, size );
 
         /* clear free node flag */
         size &= ~LALLOC_FREE_NODE_MASK;
@@ -244,7 +243,7 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
        backward validation */
     while ( 1 )
     {
-        LALLOC_GET_BLOCK_PREVPHYS_FROMPOOL_( obj->pool, idx, prev_phy );
+        LALLOC_GET_BLOCK_PREVPHYS( obj->pool, idx, prev_phy );
 
         num_prev++;
 
@@ -302,7 +301,7 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
     {
         while ( 1 )
         {
-            LALLOC_GET_BLOCK_SIZE_FROMPOOL_( obj->pool, start, size );
+            LALLOC_GET_BLOCK_SIZE( obj->pool, start, size );
             size &= ~LALLOC_FREE_NODE_MASK;
 
             if ( start == obj->dyn->flist )
@@ -319,7 +318,7 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
                 }
             }
 
-            LALLOC_GET_BLOCK_NEXT_FROMPOOL_( obj->pool, start, start );
+            LALLOC_GET_BLOCK_NEXT( obj->pool, start, start );
             if ( start == obj->dyn->flist )
             {
                 break;
