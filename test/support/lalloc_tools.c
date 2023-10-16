@@ -1,5 +1,6 @@
 #include "lalloc_priv.h"
 #include <math.h>
+#include <stdlib.h>
 
 /* internal private data from lalloc.c */
 extern const LALLOC_IDX_TYPE lalloc_b_overhead_size;

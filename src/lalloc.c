@@ -870,7 +870,7 @@ bool lalloc_free_first( LALLOC_T *obj )
 bool lalloc_free( LALLOC_T *obj, void *addr )
 {
     bool rv;
-    bool in_global_range = addr >= obj->pool && addr < obj->pool + obj->size;
+    bool in_global_range = (uint8_t*)addr >= obj->pool && (uint8_t*)addr < obj->pool + obj->size;
 
     if ( in_global_range )
     {

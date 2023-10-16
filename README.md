@@ -27,7 +27,7 @@ It allows to add, peek, and delete nodes from a list of variable-sized elements.
    - Within any scope: allocate an object with a given RAM size
 
 ```
-LALLOC_DECLARE( objname , pool_size , 0 ); 
+LALLOC_DECLARE( objname , pool_size  ); 
 ```
 
    - Within user aplicaction (fill with data)

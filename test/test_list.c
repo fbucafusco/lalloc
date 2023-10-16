@@ -43,7 +43,7 @@ extern const LALLOC_IDX_TYPE lalloc_b_overhead_size;
 /* simulates the biggest node removal */
 void test_list_related_1()
 {
-    LALLOC_DECLARE( test_alloc, 100, 0 );
+    LALLOC_DECLARE( test_alloc, 100 );
 
     lalloc_init( &test_alloc );
 
@@ -63,7 +63,7 @@ void test_list_related_2()
     char text2[] = "elementary";
     char text3[] = "ingodwetst";
 
-    LALLOC_DECLARE( test_alloc, 100, 0 );
+    LALLOC_DECLARE( test_alloc, 100 );
 
     lalloc_init( &test_alloc );
 
@@ -154,7 +154,7 @@ void test_list_related_3()
     uint16_t i;
     uint16_t acum = 0;
 
-    LALLOC_DECLARE( test_alloc, 300, 0 );
+    LALLOC_DECLARE( test_alloc, 300 );
 
     lalloc_init( &test_alloc );
 
@@ -241,7 +241,7 @@ void test_list_join()
     uint16_t i;
     // uint16_t acum = 0;
 
-    LALLOC_DECLARE( test_alloc, nodes * ( lalloc_b_overhead_size + data_size ), 0 );
+    LALLOC_DECLARE( test_alloc, nodes * ( lalloc_b_overhead_size + data_size ) );
 
     lalloc_init( &test_alloc );
  

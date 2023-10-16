@@ -99,7 +99,6 @@ extern "C" {
 #define LALLOC_CRITICAL_END     LALLOC_MUTEX_UNLOCK(obj->din.mutex)
 #endif
 
-
 /**
    @brief   LALLOC_NO_FLAGS
             Default value for passing to the LALLOC_DECLARE macro if no behaviors are needed for a certain instance.
@@ -210,14 +209,14 @@ typedef struct
 /**
    @brief declares a static object that can be declared in any scope of execution
  */
-#define LALLOC_DECLARE(NAME,SIZE, BEHAV )   lalloc_dyn_t      NAME##_Data;                                                          \
-		                                      LALLOC_POOL_TYPE  NAME##_pool[LALLOC_ADJUST_SIZE_WITH_MASK(SIZE) / LALLOC_ALIGNMENT ];  \
-                                            lalloc_t LALLOC_ROM_ATTRIBUTES NAME =                           \
-                                            {                                                               \
-                                                .pool     = (uint8_t*) NAME##_pool,                         \
-                                                .size     = LALLOC_ADJUST_SIZE_WITH_MASK(SIZE),             \
-                                                .dyn      = &(NAME##_Data),                                 \
-                                            };
+#define LALLOC_DECLARE(NAME,SIZE  )   lalloc_dyn_t      NAME##_Data;                                                          \
+		                                LALLOC_POOL_TYPE  NAME##_pool[LALLOC_ADJUST_SIZE_WITH_MASK(SIZE) / LALLOC_ALIGNMENT ];  \
+                                      lalloc_t LALLOC_ROM_ATTRIBUTES NAME =                           \
+                                      {                                                               \
+                                          .pool     = (uint8_t*) NAME##_pool,                         \
+                                          .size     = LALLOC_ADJUST_SIZE_WITH_MASK(SIZE),             \
+                                          .dyn      = &(NAME##_Data),                                 \
+                                      };
 
 
 /** methods  ---------------------------------------------------------------------------  **/

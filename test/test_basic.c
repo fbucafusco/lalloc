@@ -67,7 +67,7 @@ void test_lalloc_1()
         pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_NODE_HEAD_SIZE;
     }
 
-    LALLOC_DECLARE( test_alloc, pool_size, 0 );
+    LALLOC_DECLARE( test_alloc, pool_size );
     memset( test_alloc.pool, 0, test_alloc.size );
 
     lalloc_init( &test_alloc );
@@ -144,7 +144,7 @@ void test_lalloc_2()
         pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_NODE_HEAD_SIZE;
     }
 
-    LALLOC_DECLARE( test_alloc, pool_size, 0 );
+    LALLOC_DECLARE( test_alloc, pool_size );
     memset( test_alloc.pool, 0, test_alloc.size );
 
     lalloc_init( ( lalloc_t *const )&test_alloc );
@@ -218,7 +218,7 @@ void test_lalloc_3a()
         pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_NODE_HEAD_SIZE;
     }
 
-    LALLOC_DECLARE( test_alloc, pool_size, 0 );
+    LALLOC_DECLARE( test_alloc, pool_size );
     memset( test_alloc.pool, 0, test_alloc.size );
 
     lalloc_init( &test_alloc );
@@ -373,7 +373,7 @@ void test_lalloc_4a()
     const LALLOC_IDX_TYPE pool_size = LALLOC_ALIGN_ROUND_UP( elment_count * ( elment_size + lalloc_b_overhead_size ) );
     int scale = pool_size;
 
-    LALLOC_DECLARE( test_alloc, pool_size, 0 );
+    LALLOC_DECLARE( test_alloc, pool_size );
 
     lalloc_init( &test_alloc );
 
@@ -427,7 +427,7 @@ void test_lalloc_4b()
     const LALLOC_IDX_TYPE pool_size = 100;
     const LALLOC_IDX_TYPE elment_size = ( pool_size * 3 ) / 4;
 
-    LALLOC_DECLARE( test_alloc, pool_size, 0 );
+    LALLOC_DECLARE( test_alloc, pool_size );
 
     lalloc_init( &test_alloc );
 
@@ -467,7 +467,7 @@ void test_lalloc_free_non_valid_node()
     uint8_t *data;
     LALLOC_IDX_TYPE size;
 
-    LALLOC_DECLARE( test_alloc, 100, 0 );
+    LALLOC_DECLARE( test_alloc, 100 );
 
     lalloc_init( &test_alloc );
 
@@ -489,7 +489,7 @@ void test_lalloc_free_valid_nodes()
     LALLOC_IDX_TYPE size;
     LALLOC_IDX_TYPE size2;
 
-    LALLOC_DECLARE( test_alloc, 100, 0 );
+    LALLOC_DECLARE( test_alloc, 100 );
 
     lalloc_init( &test_alloc );
     // should fail
@@ -525,7 +525,7 @@ void test_lalloc_commit_without_alloc()
 
     LALLOC_IDX_TYPE size;
 
-    LALLOC_DECLARE( test_alloc, 100, 0 );
+    LALLOC_DECLARE( test_alloc, 100 );
 
     lalloc_init( &test_alloc );
 

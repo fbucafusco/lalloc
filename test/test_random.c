@@ -207,7 +207,7 @@ void test_random_1()
     params_in.blocksize_max = pool_size;
     params_in.title = ( char * )__FUNCTION__;
 
-    LALLOC_DECLARE( test_alloc, pool_size, 0 );
+    LALLOC_DECLARE( test_alloc, pool_size );
 
     random_test( &test_alloc, &params_in, &paramsout );
 }
@@ -225,7 +225,7 @@ void test_random_2()
     params_in.blocksize_max = pool_size / 2;
     params_in.title = ( char * )__FUNCTION__;
 
-    LALLOC_DECLARE( test_alloc, pool_size, 0 );
+    LALLOC_DECLARE( test_alloc, pool_size );
 
     random_test( &test_alloc, &params_in, &paramsout );
 }
@@ -241,12 +241,11 @@ void test_random_3()
     params_in.blocksize_max = 3;
     params_in.title = ( char * )__FUNCTION__;
 
-    LALLOC_DECLARE( test_alloc, params_in.pool_size, 0 );
+    LALLOC_DECLARE( test_alloc, params_in.pool_size );
 
     random_test( &test_alloc, &params_in, &paramsout );
 }
 
-#if 1
 void test_random()
 {
     tTestParams_In params_in;
@@ -258,11 +257,10 @@ void test_random()
     params_in.blocksize_max = uint32_random_range( params_in.blocksize_min, params_in.pool_size );
     params_in.title = ( char * )__FUNCTION__;
 
-    LALLOC_DECLARE( test_alloc, params_in.pool_size, 0 );
+    LALLOC_DECLARE( test_alloc, params_in.pool_size );
 
     random_test( &test_alloc, &params_in, &paramsout );
 }
-#endif
 
 #ifndef STM32L475xx
 int main()
