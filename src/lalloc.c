@@ -319,8 +319,7 @@ void _block_list_add_sorted( uint8_t *pool, LALLOC_IDX_TYPE *list_idx, LALLOC_ID
 {
     LALLOC_IDX_TYPE current = *list_idx;
 
-
-    if ( LALLOC_IDX_INVALID == ( *list_idx ) )
+    if ( LALLOC_IDX_INVALID== current   )
     {
         /* if the list is empty, the node is the first */
         _block_list_add_first( pool, &current, block_idx );
@@ -329,18 +328,13 @@ void _block_list_add_sorted( uint8_t *pool, LALLOC_IDX_TYPE *list_idx, LALLOC_ID
     else
     {
         LALLOC_IDX_TYPE size_curr;
-        LALLOC_IDX_TYPE size_max;
         LALLOC_IDX_TYPE size_new;
 
-        /* the list already has a node */
         LALLOC_GET_BLOCK_SIZE_FROMPOOL_( pool, block_idx, size_new );
+        size_new &= ~LALLOC_FREE_NODE_MASK; // Clear the control flags
 
-        /* clear the control flags */
-        size_new &= ~LALLOC_FREE_NODE_MASK;
+        LALLOC_IDX_TYPE prev = LALLOC_IDX_INVALID;
 
-        size_max = size_new;
-
-        /* find a spot in the list */
         while ( 1 )
         {
             LALLOC_GET_BLOCK_SIZE_FROMPOOL_( pool, current, size_curr );
@@ -348,43 +342,41 @@ void _block_list_add_sorted( uint8_t *pool, LALLOC_IDX_TYPE *list_idx, LALLOC_ID
             /* clear the control flags */
             size_curr &= ~LALLOC_FREE_NODE_MASK;
 
-            /* if the size is bigger than the max, update the maximum */
-            if ( size_curr > size_max )
-            {
-                size_max = size_curr;
-            }
-
             if ( size_new > size_curr )
             {
-                /* the node is inserted */
-                _block_list_add_first( pool, &current, block_idx );
-
-                if ( size_max == size_new )
-                {
-                    /* the list reference should change when the inserted node is the biggest */
-                    *list_idx = current;
-                }
                 break;
             }
-            else
-            {
-                /* move foward the list  */
-            }
 
+            prev = current;
             LALLOC_GET_BLOCK_NEXT_FROMPOOL_( pool, current, current );
 
             if ( current == *list_idx )
             {
-                /* we already move thought all the list. The node must be inserted anyway but the list reference should change
-                   to the next node, because is the biggest  */
-                _block_list_add_first( pool, &current, block_idx );
-                LALLOC_GET_BLOCK_NEXT_FROMPOOL_( pool, current, current );
-                *list_idx = current;
                 break;
+            }
+
+        }
+
+
+        _block_list_add_first( pool, &current, block_idx );
+
+        if ( current == *list_idx )
+        {
+            *list_idx = current;
+        }
+        else
+        {
+            if ( prev != LALLOC_IDX_INVALID )
+            {
+            }
+            else
+            {
+                *list_idx = block_idx; // Update the list's start if it was the first element
             }
         }
     }
 }
+
 
 /**
    @brief   Removes a block from a list. This is a private lalloc operation.
