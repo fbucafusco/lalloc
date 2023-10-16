@@ -136,7 +136,7 @@ void lalloc_print_graph( LALLOC_T *obj, char last, uint32_t scale )
 
             if ( idx_ >= pool_size_ || block_size_ >= pool_size_ )
             {
-                exit( -1 ); //stops execution because an error occurred
+                exit( -1 ); // stops execution because an error occurred
             }
 
             for ( int i = idx_; i < idx_ + block_size_ + hdr_size_; i++ )
@@ -154,13 +154,13 @@ void lalloc_print_graph( LALLOC_T *obj, char last, uint32_t scale )
                is an error */
             if ( !( next_phy > idx ) )
             {
-                exit( -2 ); //stops execution because an error occurred
+                exit( -2 ); // stops execution because an error occurred
             }
 
             /* if the next_phy block is outside the container */
             if ( next_phy > obj->size )
             {
-                exit( -3 ); //stops execution because an error occurred
+                exit( -3 ); // stops execution because an error occurred
             }
 
             idx = next_phy;
@@ -172,7 +172,6 @@ void lalloc_print_graph( LALLOC_T *obj, char last, uint32_t scale )
 
     printf( "%c - %s", last, b );
 }
-
 
 /* Verifies the data structure integrity TESTS PURPOSES ONLY
    1: ok,
@@ -187,6 +186,7 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
     LALLOC_IDX_TYPE good2 = 1;
     LALLOC_IDX_TYPE good3 = 1;
     LALLOC_IDX_TYPE good4 = 1;
+    LALLOC_IDX_TYPE good5 = 1;
 
     LALLOC_IDX_TYPE num_prev = 0;
     LALLOC_IDX_TYPE num_next = 0;
@@ -294,11 +294,38 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
     /* 2nd stage: move through the lists in both directions.  TODO */
     LALLOC_CRITICAL_END;
 
-    // volatile bool rv = false;
-    // if (!(good1 && good2 && good3 && good4))
-    // {
-    //     rv = true;
-    // }
+    // the flist has the decreasing sizes of nodes
+    LALLOC_IDX_TYPE start = obj->dyn->flist;
+    LALLOC_IDX_TYPE prev_size;
 
-    return good1 && good2 && good3 && good4;
+    if ( start != LALLOC_IDX_INVALID )
+    {
+        while ( 1 )
+        {
+            LALLOC_GET_BLOCK_SIZE_FROMPOOL_( obj->pool, start, size );
+            size &= ~LALLOC_FREE_NODE_MASK;
+
+            if ( start == obj->dyn->flist )
+            {
+                prev_size = size;
+            }
+            else
+            {
+                if ( size > prev_size )
+                {
+                    printf( "%s flist is not ordered\n", __FUNCTION__ );
+                    good5 = 0;
+                    break;
+                }
+            }
+
+            LALLOC_GET_BLOCK_NEXT_FROMPOOL_( obj->pool, start, start );
+            if ( start == obj->dyn->flist )
+            {
+                break;
+            }
+        }
+    }
+
+    return good1 && good2 && good3 && good4 && good5;
 }
