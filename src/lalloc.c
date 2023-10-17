@@ -227,15 +227,12 @@ LALLOC_IDX_TYPE _block_list_find_by_idx( uint8_t *pool, LALLOC_IDX_TYPE list, LA
 
 /**
    @brief   finds a block in a list by payload reference.
-            returns the found relative block index  or LALLOC_IDX_INVALID if not found
+            returns the found relative block index or LALLOC_IDX_INVALID if not found
             If found, it returns the index block whos payload contains the provided reference
 
             if LALLOC_FREE_ANY==1 will finds a node within the list whose address is wihin the user area of the node.
-
             if LALLOC_FREE_ANY==0 will return the node from the list, whose address matches the first byte of the user area of the node.
-
             If not found, it returns LALLOC_IDX_INVALID
-
             NOT THREAD SAFE
 
    @param pool
@@ -257,22 +254,11 @@ LALLOC_IDX_TYPE _block_list_find_by_ref( uint8_t *pool, LALLOC_IDX_TYPE list, ui
     /* addr is the user addres, that is shifted from the node addess in lalloc_b_overhead_size bytes */
     idx -= lalloc_b_overhead_size;
 
-    LALLOC_IDX_TYPE size;
-    LALLOC_IDX_TYPE node_mask1;
-    LALLOC_IDX_TYPE node_mask2;
-
     /* is the list the allocated list or the free list ? */
+    bool is_list_free = _block_is_free( pool, list );
+    bool is_node_free = _block_is_free( pool, idx );
 
-    /* gets the free bit mask of the firs node on the list .  */
-    // LALLOC_GET_BLOCK_SIZE( pool, list, size );
-    // node_mask1 = size & LALLOC_FREE_NODE_MASK;
-    node_mask1 = _block_get_size( pool, list );
-    /* gets the free bit mask of the node to search .  */
-    // LALLOC_GET_BLOCK_SIZE( pool, list, size );
-    // node_mask2 = size & LALLOC_FREE_NODE_MASK;
-    node_mask2 = _block_get_size( pool, list );
-
-    if ( node_mask1 == node_mask2 )
+    if ( is_list_free == is_node_free )
     {
         // belongs to the same list, found
         rv = idx;
@@ -282,7 +268,6 @@ LALLOC_IDX_TYPE _block_list_find_by_ref( uint8_t *pool, LALLOC_IDX_TYPE list, ui
         // belongs to different list, not found
         rv = LALLOC_IDX_INVALID;
     }
-
 #endif
 
     return rv;

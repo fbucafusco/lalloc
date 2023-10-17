@@ -57,7 +57,7 @@ extern "C" {
           0:  addr MUST be the starting area of the memory area given to the user with lalloc_alloc
  */
 #ifndef LALLOC_FREE_ANY
-#define LALLOC_FREE_ANY 1
+#define LALLOC_FREE_ANY 0
 #endif
 
 /**
