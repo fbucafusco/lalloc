@@ -245,7 +245,7 @@ void test_random_1()
     params_in.blocksize_max = pool_size;
     params_in.title =  ( char * )__FUNCTION__;
 
-    LALLOC_DECLARE( test_alloc, pool_size);
+    LALLOC_DECLARE( test_alloc, pool_size );
 
     random_test( &test_alloc, &params_in, &paramsout );
 }

@@ -49,8 +49,12 @@ extern "C" {
 /**
    @brief LALLOC_FREE_ANY
           Defines the behavior of lalloc_free.
-          1: addr field could be ANY address of memory granted to the user with a range from  the start or the block to start + committed size.
-          0: addr MUST be the starting area of the memory area given to the user with lalloc_alloc
+          1:  addr field could be ANY address of memory granted to the user with a range from  the start or the block to start + committed size.
+              Is handy when a pointer to an allocated space is passed to other layer of processing
+              and then these layers need to deallocate the space, without having the start of the original
+              allocated area.
+              Slows down the lalloc_free function.
+          0:  addr MUST be the starting area of the memory area given to the user with lalloc_alloc
  */
 #ifndef LALLOC_FREE_ANY
 #define LALLOC_FREE_ANY 1
@@ -88,20 +92,22 @@ extern "C" {
 #define LALLOC_STATIC
 #else
 #define LALLOC_STATIC   static
-#endif
+#endif //LALLOC_TEST
 
 #define LALLOC_BLOCK_FIELD_OFFSET_NEXT                offsetof(lalloc_block_t , next)
 #define LALLOC_BLOCK_FIELD_OFFSET_SIZE                offsetof(lalloc_block_t , blk_size)
 #define LALLOC_NEXT_BLOCK_IDX(idx,size)               ((idx)+(size)+lalloc_b_overhead_size)
+
 #define LALLOC_NODE_HEAD_SIZE                         LALLOC_ALIGN_ROUND_UP( sizeof(lalloc_block_t) )
 
 #define LALLOC_BLOCK(POOL, INDEX)                     ( ( lalloc_block_t* ) &(POOL)[(INDEX)] )
 #define LALLOC_BLOCK_DATA(POOL, INDEX)                &(POOL)[(INDEX+lalloc_b_overhead_size)]
+#define LALLOC_BLOCK_FLAGS(POOL, INDEX)               ( LALLOC_BLOCK(POOL, INDEX)->flags )
 #define LALLOC_BLOCK_SIZE(POOL, INDEX)                ( LALLOC_BLOCK(POOL, INDEX)->blk_size )
 #define LALLOC_BLOCK_NEXT(POOL, INDEX)                ( LALLOC_BLOCK(POOL, INDEX)->next )
 #define LALLOC_BLOCK_PREV(POOL, INDEX)                ( LALLOC_BLOCK(POOL, INDEX)->prev )
 
-#define LALLOC_BLOCK_NEXTPHYS(POOL, INDEX)            LALLOC_NEXT_BLOCK_IDX(INDEX, LALLOC_BLOCK_SIZE(POOL, INDEX) & ~LALLOC_FREE_NODE_MASK )
+//#define LALLOC_BLOCK_NEXTPHYS(POOL, INDEX)            LALLOC_NEXT_BLOCK_IDX(INDEX, LALLOC_BLOCK_SIZE(POOL, INDEX) & ~LALLOC_FREE_NODE_MASK )
 #define LALLOC_BLOCK_PREVPHYS(POOL, INDEX)            ( LALLOC_BLOCK(POOL, INDEX)->prev_phys )
 #define LALLOC_BLOCK_PAYLOAD_REF(INDEX)               ( &obj->pool[(INDEX) + lalloc_b_overhead_size] )
 #define LALLOC_NEXT_BLOCK_INDEX_TEST(POOL,INDEX)      ( LALLOC_BLOCK(POOL, INDEX)->next )
@@ -109,15 +115,16 @@ extern "C" {
 /* operations */
 #define LALLOC_GET_BLOCK_DATA(POOL,INDEX, DATAPTR)    (DATAPTR) = LALLOC_BLOCK_DATA( (POOL), (INDEX) )
 #define LALLOC_GET_BLOCK_SIZE(POOL,INDEX, SIZE)       (SIZE) = LALLOC_BLOCK_SIZE( (POOL), (INDEX) )
+#define LALLOC_GET_BLOCK_FLAGS(POOL,INDEX, SIZE)       (SIZE) = LALLOC_BLOCK_FLAGS( (POOL), (INDEX) )
 #define LALLOC_GET_BLOCK_NEXT(POOL,INDEX, NEXT)       (NEXT) = LALLOC_BLOCK_NEXT( (POOL), (INDEX) )
 #define LALLOC_GET_BLOCK_PREV(POOL,INDEX, PREV)       (PREV) = LALLOC_BLOCK_PREV(POOL,INDEX);
-#define LALLOC_GET_BLOCK_NEXTPHYS(POOL, INDEX, NEXT)  (NEXT) = LALLOC_BLOCK_NEXTPHYS(POOL,INDEX);
+//#define LALLOC_GET_BLOCK_NEXTPHYS(POOL, INDEX, NEXT)  (NEXT) = LALLOC_BLOCK_NEXTPHYS(POOL,INDEX);
 #define LALLOC_GET_BLOCK_PREVPHYS(POOL, INDEX, PREV)  (PREV) = LALLOC_BLOCK_PREVPHYS(POOL,INDEX);
 #define LALLOC_SET_BLOCK_SIZE(POOL,INDEX, SIZE)       LALLOC_BLOCK_SIZE( (POOL), (INDEX) ) = (SIZE)
+#define LALLOC_SET_BLOCK_FLAGS(POOL,INDEX, SIZE)      LALLOC_BLOCK_FLAGS( (POOL), (INDEX) ) = (SIZE)
 #define LALLOC_SET_BLOCK_NEXT(POOL,INDEX, NEXT)       LALLOC_BLOCK_NEXT( (POOL), (INDEX) ) = (NEXT)
 #define LALLOC_SET_BLOCK_PREV(POOL,INDEX, PREV)       LALLOC_BLOCK_PREV( (POOL), (INDEX) ) = (PREV)
 #define LALLOC_SET_BLOCK_PREVPHYS(POOL, INDEX, PREV)  LALLOC_BLOCK_PREVPHYS(POOL,INDEX) = (PREV)
-
 
 /**
    @brief structure for each node's block
@@ -128,10 +135,20 @@ typedef struct
     LALLOC_IDX_TYPE prev;       /* Logical index to the previous block in the list     */
     LALLOC_IDX_TYPE next;       /* Logical index to the next block in the list         */
     LALLOC_IDX_TYPE prev_phys;  /* Physical index to the previous block in the pool    */
-    //LALLOC_IDX_TYPE next_phys;  /* Physical index to the next block in the pool   NOT NEEDED     */
     LALLOC_IDX_TYPE blk_size;   /* playload block's size                               */
+#if LALLOC_ALIGNMENT==1
+    LALLOC_IDX_TYPE flags;
+#endif
 } lalloc_block_t;
 #pragma pack()
+
+/**
+   @brief   LALLOC_FREE_NODE_MASK
+            defines the bit within the blk_size field of lalloc_block_t that will mark the block as free
+            NOTE: this is done for avoiding move through the free list when joining free nodes.
+ */
+#define LALLOC_FREE_NODE_MASK       1
+#define LALLOC_USED_NODE_MASK       0
 
 /* private functions exposed to tests */
 void _block_list_add_first ( uint8_t* pool, LALLOC_IDX_TYPE* list_idx, LALLOC_IDX_TYPE block_idx );

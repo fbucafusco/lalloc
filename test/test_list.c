@@ -76,7 +76,12 @@ void test_list_related_2()
     /* create 2 artificial blocks within the pool */
     /* both blocks, HEADER + DATA = 20 bytes */
 
-    _block_set( test_alloc.pool, 0, 10, 0, 0, LALLOC_FREE_NODE_MASK );
+    _block_set( test_alloc.pool, 0, 10, 0, 0, 0 );
+    // _block_set_free(test_alloc.pool, 0);
+    _block_set_flags( test_alloc.pool, 0, LALLOC_FREE_NODE_MASK );
+
+
+
     _block_set_data( test_alloc.pool, 0, text1, sizeof( text1 ) - 1 );
     _block_set( test_alloc.pool, 20, 10, 20, 20, 0 );
     _block_set_data( test_alloc.pool, 20, text2, sizeof( text2 ) - 1 );
@@ -157,6 +162,8 @@ void test_list_related_3()
     LALLOC_DECLARE( test_alloc, 300 );
 
     lalloc_init( &test_alloc );
+
+    // lalloc_print_metrics( &test_alloc );
 
     LALLOC_IDX_TYPE added;
 
@@ -244,7 +251,7 @@ void test_list_join()
     LALLOC_DECLARE( test_alloc, nodes * ( lalloc_b_overhead_size + data_size ) );
 
     lalloc_init( &test_alloc );
- 
+
     /* list is empty */
 
     /*TODO REMOVE COMMENT both blocks, HEADER + DATA + FOOTER = 18 bytes */

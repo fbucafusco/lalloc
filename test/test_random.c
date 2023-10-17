@@ -107,7 +107,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
     /* request memory space */
     lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
-    // lalloc_print_graph(obj, 'A', SCALE);
+    //  lalloc_print_graph(obj, 'A', SCALE);
 
     TEST_ASSERT_TRUE( isr_dis == 0 );
     p_mem_last = p_mem;
@@ -137,7 +137,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
             TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
             TEST_ASSERT_TRUE( isr_dis == 0 );
-            // lalloc_print_graph(obj, 'A', SCALE);
+            //  lalloc_print_graph(obj, 'C', SCALE);
 
             paramsout->num_allocs++;
             paramsout->num_bytes_written += current_charnum;
@@ -145,7 +145,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
 
         /* Requesta a ram area */
         lalloc_alloc( obj, ( void ** )&p_mem, &given_size );
-        // lalloc_print_graph(obj, 'A', SCALE);
+        //  lalloc_print_graph(obj, 'A', SCALE);
         TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
 
         if ( p_mem == NULL && given_size == 0 )
@@ -161,7 +161,7 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
         {
             /* Dealloc */
             lalloc_free( obj, p_mem_last );
-            // lalloc_print_graph(obj, 'F', SCALE);
+            //  lalloc_print_graph(obj, 'F', SCALE);
             TEST_ASSERT_TRUE( lalloc_sanity_check( obj ) );
             TEST_ASSERT_TRUE( isr_dis == 0 );
         }
@@ -172,8 +172,6 @@ void random_test( LALLOC_T *obj, tTestParams_In *params, tTestParams_Out *params
             p_mem_last = p_mem;
         }
 
-        /* test that ensures that the free node is always the biggest */
-        // TEST_FREE_SPACE_VALIDATION( obj );
     }
 
 #if PRINT_RESULTS == 1

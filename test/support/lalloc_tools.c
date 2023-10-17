@@ -5,6 +5,8 @@
 /* internal private data from lalloc.c */
 extern const LALLOC_IDX_TYPE lalloc_b_overhead_size;
 
+LALLOC_INLINE LALLOC_IDX_TYPE _block_get_next_phy( uint8_t *pool, LALLOC_IDX_TYPE block_idx );
+
 /* TEST PURPOSES ONLY
    It saves data into the data field of the block  */
 void _block_set_data( uint8_t *pool, LALLOC_IDX_TYPE block_idx, uint8_t *addr, LALLOC_IDX_TYPE size )
@@ -52,8 +54,10 @@ void lalloc_measure_framgentation( LALLOC_T *obj, float *sqbase, float *average_
         {
             LALLOC_IDX_TYPE size;
 
-            LALLOC_GET_BLOCK_SIZE( obj->pool, node, size );
-            size &= ~LALLOC_FREE_NODE_MASK;
+            // LALLOC_GET_BLOCK_SIZE( obj->pool, node, size );
+            // size &= ~LALLOC_FREE_NODE_MASK;
+
+            size = _block_get_size( obj->pool, node );
 
             sum += size;
             sum2 += size * size;
@@ -84,6 +88,16 @@ void lalloc_measure_framgentation( LALLOC_T *obj, float *sqbase, float *average_
     LALLOC_CRITICAL_END;
 }
 
+void lalloc_print_metrics( LALLOC_T *obj )
+{
+    printf( "----------------------------------------------------------\n" );
+    printf( "alignment: %u\n", LALLOC_ALIGNMENT );
+    printf( "pool size: %u\n", obj->size );
+    printf( "hdr size: %u\n", sizeof( lalloc_block_t ) );
+    printf( "hdr overhead size: %u\n", LALLOC_ALIGN_ROUND_UP( sizeof( lalloc_block_t ) ) - sizeof( lalloc_block_t ) );
+    printf( "----------------------------------------------------------\n" );
+}
+
 /**
    @brief Prints in stdout a ASCII representation of the nodes in the pool.
           TESTS PURPOSES ONLY
@@ -108,10 +122,14 @@ void lalloc_print_graph( LALLOC_T *obj, char last, uint32_t scale )
     {
         while ( 1 )
         {
-            LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, idx, next_phy );
-            LALLOC_GET_BLOCK_SIZE( obj->pool, idx, block_size );
+            next_phy = _block_get_next_phy( obj->pool, idx );
 
-            if ( block_size & LALLOC_FREE_NODE_MASK )
+            // LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, idx,  );
+            // LALLOC_GET_BLOCK_SIZE( obj->pool, idx, block_size );
+
+            bool is_free = _block_is_free( obj->pool, idx );
+
+            if ( is_free )
             {
                 c = 'F'; // free
             }
@@ -128,11 +146,13 @@ void lalloc_print_graph( LALLOC_T *obj, char last, uint32_t scale )
             }
 
             /* clear free node flag */
-            block_size &= ~LALLOC_FREE_NODE_MASK;
+            // block_size &= ~LALLOC_FREE_NODE_MASK;
+
+            block_size = _block_get_size( obj->pool, idx );
 
             size_t idx_ = ( idx * scale ) / obj->size;
             size_t block_size_ = ( block_size * scale ) / obj->size;
-            size_t hdr_size_ = ( LALLOC_NODE_HEAD_SIZE * scale ) / obj->size;
+            size_t hdr_size_ = ( lalloc_b_overhead_size * scale ) / obj->size;
 
             if ( idx_ >= pool_size_ || block_size_ >= pool_size_ )
             {
@@ -204,11 +224,15 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
     /* forward validation */
     while ( 1 )
     {
-        LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, idx, next_phy );
-        LALLOC_GET_BLOCK_SIZE( obj->pool, idx, size );
+        // LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, idx, next_phy );
+        next_phy = _block_get_next_phy( obj->pool, idx );
 
-        /* clear free node flag */
-        size &= ~LALLOC_FREE_NODE_MASK;
+        // LALLOC_GET_BLOCK_SIZE( obj->pool, idx, size );
+
+        // /* clear free node flag */
+        // size &= ~LALLOC_FREE_NODE_MASK;
+        size = _block_get_size( obj->pool, idx );
+
         size_sum += size;
 
         num_next++;
@@ -302,8 +326,10 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
     {
         while ( 1 )
         {
-            LALLOC_GET_BLOCK_SIZE( obj->pool, start, size );
-            size &= ~LALLOC_FREE_NODE_MASK;
+            // LALLOC_GET_BLOCK_SIZE( obj->pool, start, size );
+            // size &= ~LALLOC_FREE_NODE_MASK;
+
+            size = _block_get_size( obj->pool, start );
 
             if ( start == obj->dyn->flist )
             {

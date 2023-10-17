@@ -49,7 +49,7 @@
 
 #define LALLOC_INLINE
 
- 
+
 
 /* in order to enable test code */
 #define LALLOC_TEST

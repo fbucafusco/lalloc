@@ -72,6 +72,8 @@ void test_lalloc_1()
 
     lalloc_init( &test_alloc );
 
+    // lalloc_print_metrics( &test_alloc );
+
     /* allocation of all free space in the pool */
     for ( i = 0; i < 5; i++ )
     {
@@ -82,7 +84,6 @@ void test_lalloc_1()
 
         lalloc_commit( &test_alloc, strlen( text_arr[i] ) );
         TEST_ASSERT_TRUE( lalloc_sanity_check( &test_alloc ) );
-
     }
 
     /* there shouldn't be any free node */

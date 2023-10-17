@@ -44,7 +44,7 @@ extern "C" {
 /* Project dependant configuration : the user should create this file in its project */
 #include "lalloc_config.h"
 
-#define LALLOC_VERSION     020
+#define LALLOC_VERSION           020
 
 /* DEFAULT VALUES: can be changed in  lalloc_config.h =========================================================================== */
 
@@ -54,26 +54,18 @@ extern "C" {
 
 /**
    @brief it defines the alignment required to access the data.
-          e.g 1 -> the first byte of any block will be aligned with an address multiple with LALLOC_ALIGNMENT
+          e.g 2 -> the first byte of any block will be aligned with an address multiple of 2
+          options are 1, 2, 4 and 8.
  */
 #ifndef LALLOC_ALIGNMENT
-#define LALLOC_ALIGNMENT                    4
+#define LALLOC_ALIGNMENT         4
 #endif
-
-/**
-   @brief   LALLOC_ALIGN_BOUNDRIES
-            Every node or memory reference provided to the user, will be aligned by LALLOC_ALIGNMENT bytes
- */
-#ifndef LALLOC_ALIGN_BOUNDRIES
-#define LALLOC_ALIGN_BOUNDRIES              1
-#endif
-
 
 /**
    @brief defines the maximum ammount of byte of the pool for each instance.
  */
 #ifndef LALLOC_MAX_BYTES
-#define LALLOC_MAX_BYTES                    0xFFFF
+#define LALLOC_MAX_BYTES         0xFFFF
 #endif
 
 /* CONDITIONALS ========================================================================================================== */
@@ -84,7 +76,7 @@ extern "C" {
             In this case, the RAM footprint will include the mutex object handle.
  */
 #if defined(LALLOC_CRITICAL_START) && defined(LALLOC_CRITICAL_END)
-#define LALLOC_THREAD_SAFE      2
+#define LALLOC_THREAD_SAFE       2
 #endif
 
 /**
@@ -93,17 +85,17 @@ extern "C" {
             In this case, the RAM footptinf will include the mutex object handle.
  */
 #if defined(LALLOC_MUTEX_INIT)&&defined(LALLOC_MUTEX_LOCK)&&defined(LALLOC_MUTEX_UNLOCK)&&defined(LALLOC_MUTEX_TYPE)
-#define LALLOC_THREAD_SAFE      1
-#define LALLOC_CRITICAL_INIT    LALLOC_MUTEX_INIT(obj->din.mutex)
-#define LALLOC_CRITICAL_START   LALLOC_MUTEX_LOCK(obj->din.mutex)
-#define LALLOC_CRITICAL_END     LALLOC_MUTEX_UNLOCK(obj->din.mutex)
+#define LALLOC_THREAD_SAFE       1
+#define LALLOC_CRITICAL_INIT     LALLOC_MUTEX_INIT(obj->din.mutex)
+#define LALLOC_CRITICAL_START    LALLOC_MUTEX_LOCK(obj->din.mutex)
+#define LALLOC_CRITICAL_END      LALLOC_MUTEX_UNLOCK(obj->din.mutex)
 #endif
 
 /**
    @brief   LALLOC_NO_FLAGS
             Default value for passing to the LALLOC_DECLARE macro if no behaviors are needed for a certain instance.
  */
-#define LALLOC_NO_FLAGS                0
+#define LALLOC_NO_FLAGS          0
 
 /**
    @brief   Based on LALLOC_MAX_BYTES it defines the data type for the indexing of bytes and blocks
@@ -113,7 +105,7 @@ extern "C" {
 #define LALLOC_IDX_TYPE                uint8_t
 #elif( LALLOC_MAX_BYTES<=0xFFFF )
 #define LALLOC_IDX_TYPE                uint16_t
-#elif( LALLOC_MAX_BYTES<=0xFFFFFFFF )  
+#elif( LALLOC_MAX_BYTES<=0xFFFFFFFF )
 #define LALLOC_IDX_TYPE                uint32_t
 #endif
 #endif
@@ -125,45 +117,27 @@ extern "C" {
 #define LALLOC_IDX_INVALID              ((LALLOC_IDX_TYPE)(~((LALLOC_IDX_TYPE)0)))
 
 #if LALLOC_ALIGNMENT==1
-#define LALLOC_POOL_TYPE                uint8_t
+#define LALLOC_ALIGN_TYPE                uint8_t
 #elif LALLOC_ALIGNMENT==2
-#define LALLOC_POOL_TYPE                uint16_t
+#define LALLOC_ALIGN_TYPE                uint16_t
 #elif LALLOC_ALIGNMENT==4
-#define LALLOC_POOL_TYPE                uint32_t
+#define LALLOC_ALIGN_TYPE                uint32_t
+#elif LALLOC_ALIGNMENT==8
+#define LALLOC_ALIGN_TYPE                uint64_t
 #else
-#error "LALLOC_POOL_TYPE: ALIGNMENT not supported"
+#error "LALLOC_ALIGN_TYPE: ALIGNMENT not supported"
 #endif
+
+/**
+   @brief   LALLOC_SIZE_ROUND_UP
+            rounds up the size to the next multiple of the size of the type passed as parameter
+ */
+#define LALLOC_SIZE_ROUND_UP( TYPE, SIZE) ((sizeof(TYPE) == 1) ? (SIZE) : ( (SIZE) + (sizeof(TYPE) - 1) ) & ~(sizeof(TYPE) - 1))
 
 /**
    @brief General macros for adjusting sizes and addresses
 */
-#if LALLOC_ALIGN_BOUNDRIES==1
-#define LALLOC_ALIGN_ROUND_UP_(TYPE,SIZE,ALIGNMENT)    (( TYPE ) ( (SIZE) + (  ( TYPE )   ( (ALIGNMENT) - 1 ) ) ) & ~(  ( TYPE )  (ALIGNMENT) - 1 ))
-#define LALLOC_ALIGN_ROUND_UP(SIZE)                    LALLOC_ALIGN_ROUND_UP_( LALLOC_IDX_TYPE , SIZE , LALLOC_ALIGNMENT )
-#else
-#define LALLOC_ALIGN_ROUND_UP(SIZE)                    (SIZE)
-#endif
-
-/**
-   @brief   LALLOC_FREE_NODE_MASK
-            defines the bit within the blk_size field of lalloc_block_t that will mark the block as free
-            NOTE: this is done for avoiding move through the free list when joining free nodes.
- */
-#define LALLOC_FREE_NODE_MASK_(TYPE)   (((TYPE)1)<<(sizeof(TYPE)*8-1))
-#define LALLOC_FREE_NODE_MASK          LALLOC_FREE_NODE_MASK_(LALLOC_IDX_TYPE)
-
-
-/**
- * @brief Returns the buffer size required for the pool taking into account the type of the indexing, required size and alignment
- *        Also takes into account the 1 bit size reduction caused by LALLOC_FREE_NODE_MASK bit
- *
- */
-#define LALLOC_ADJUST_SIZE_WITH_MASK_(TYPE,SIZE,ALIGNMENT)  ((TYPE) LALLOC_ALIGN_ROUND_UP_(TYPE,SIZE,ALIGNMENT)&~LALLOC_FREE_NODE_MASK_(TYPE))
-#define LALLOC_ADJUST_SIZE_WITH_MASK(SIZE)                  LALLOC_ADJUST_SIZE_WITH_MASK_( LALLOC_IDX_TYPE , SIZE , LALLOC_ALIGNMENT )
-
-/* CONSTANTS ============================================================================================================ */
-// const LALLOC_IDX_TYPE lalloc_alignment       = LALLOC_ALIGNMENT;
-// const LALLOC_IDX_TYPE lalloc_invalid_index   = LALLOC_IDX_INVALID;
+#define LALLOC_ALIGN_ROUND_UP(SIZE)     LALLOC_SIZE_ROUND_UP( LALLOC_ALIGN_TYPE , SIZE  )
 
 /* STRUCTURES ============================================================================================================ */
 typedef struct
@@ -209,15 +183,15 @@ typedef struct
 /**
    @brief declares a static object that can be declared in any scope of execution
  */
-#define LALLOC_DECLARE(NAME,SIZE  )   lalloc_dyn_t      NAME##_Data;                                                          \
-		                                LALLOC_POOL_TYPE  NAME##_pool[LALLOC_ADJUST_SIZE_WITH_MASK(SIZE) / LALLOC_ALIGNMENT ];  \
-                                      lalloc_t LALLOC_ROM_ATTRIBUTES NAME =                           \
-                                      {                                                               \
-                                          .pool     = (uint8_t*) NAME##_pool,                         \
-                                          .size     = LALLOC_ADJUST_SIZE_WITH_MASK(SIZE),             \
-                                          .dyn      = &(NAME##_Data),                                 \
-                                      };
-
+#define LALLOC_DECLARE(NAME,SIZE  )                                                                   \
+lalloc_dyn_t         NAME##_Data;                                                                     \
+LALLOC_ALIGN_TYPE    NAME##_pool[LALLOC_SIZE_ROUND_UP(LALLOC_ALIGN_TYPE,SIZE) / LALLOC_ALIGNMENT ];   \
+lalloc_t             LALLOC_ROM_ATTRIBUTES NAME =                                                     \
+{                                                                                                     \
+    .pool     = (uint8_t*) NAME##_pool,                                                               \
+    .size     = sizeof(NAME##_pool),                                                                  \
+    .dyn      = &(NAME##_Data),                                                                       \
+};
 
 /** methods  ---------------------------------------------------------------------------  **/
 
