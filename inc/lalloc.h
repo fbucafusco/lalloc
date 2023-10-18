@@ -44,7 +44,7 @@ extern "C" {
 /* Project dependant configuration : the user should create this file in its project */
 #include "lalloc_config.h"
 
-#define LALLOC_VERSION           020
+#define LALLOC_VERSION           030
 
 /* DEFAULT VALUES: can be changed in  lalloc_config.h =========================================================================== */
 
@@ -90,12 +90,6 @@ extern "C" {
 #define LALLOC_CRITICAL_START    LALLOC_MUTEX_LOCK(obj->din.mutex)
 #define LALLOC_CRITICAL_END      LALLOC_MUTEX_UNLOCK(obj->din.mutex)
 #endif
-
-/**
-   @brief   LALLOC_NO_FLAGS
-            Default value for passing to the LALLOC_DECLARE macro if no behaviors are needed for a certain instance.
- */
-#define LALLOC_NO_FLAGS          0
 
 /**
    @brief   Based on LALLOC_MAX_BYTES it defines the data type for the indexing of bytes and blocks
@@ -221,6 +215,6 @@ void lalloc_dtor( void* this_ );
 
 
 
-/* v0.20 */
+/* v0.30 */
 
 

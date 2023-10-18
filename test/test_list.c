@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* internal private data from lalloc.c */
 extern const LALLOC_IDX_TYPE lalloc_b_overhead_size;
 
-/* simulates the biggest node removal */
+/* simulates the biggest block removal */
 void test_list_related_1()
 {
     LALLOC_DECLARE( test_alloc, 100 );
@@ -56,7 +56,7 @@ void test_list_related_1()
     TEST_ASSERT_EQUAL_INT( LALLOC_IDX_INVALID, test_alloc.dyn->flist );
 }
 
-/* simulates the node insertion and the removal of a middle node */
+/* simulates the block insertion and the removal of a middle block */
 void test_list_related_2()
 {
     char text1[] = "walkingded";
@@ -77,10 +77,7 @@ void test_list_related_2()
     /* both blocks, HEADER + DATA = 20 bytes */
 
     _block_set( test_alloc.pool, 0, 10, 0, 0, 0 );
-    // _block_set_free(test_alloc.pool, 0);
-    _block_set_flags( test_alloc.pool, 0, LALLOC_FREE_NODE_MASK );
-
-
+    _block_set_flags( test_alloc.pool, 0, LALLOC_FREE_BLOCK_MASK );
 
     _block_set_data( test_alloc.pool, 0, text1, sizeof( text1 ) - 1 );
     _block_set( test_alloc.pool, 20, 10, 20, 20, 0 );
@@ -145,7 +142,7 @@ void test_list_related_2()
     TEST_ASSERT_EQUAL_STRING_LEN( text2, data, sizeof( text2 ) - 1 );
 }
 
-/* sorted node insertion */
+/* sorted block insertion */
 void test_list_related_3()
 {
     char text1[] = "walking dead";                     // 12
@@ -162,16 +159,15 @@ void test_list_related_3()
     LALLOC_DECLARE( test_alloc, 300 );
 
     lalloc_init( &test_alloc );
-
     // lalloc_print_metrics( &test_alloc );
 
     LALLOC_IDX_TYPE added;
 
     /* list is empty */
-
     memset( test_alloc.pool, 0x55, test_alloc.size );
 
     /* create 3 artificial blocks within the pool */
+
     /*TODO REMOVE COMMENT both blocks, HEADER + DATA + FOOTER = 18 bytes */
     for ( i = 0; i < 5; i++ )
     {
@@ -241,14 +237,14 @@ void test_list_related_3()
 /* join  */
 void test_list_join()
 {
-    int nodes = 20;
+    int blocks = 20;
     LALLOC_IDX_TYPE data_size = 4;
-    LALLOC_IDX_TYPE indexes[nodes];
-    uint8_t *addreses[nodes];
+    LALLOC_IDX_TYPE indexes[blocks];
+    uint8_t *addreses[blocks];
     uint16_t i;
     // uint16_t acum = 0;
 
-    LALLOC_DECLARE( test_alloc, nodes * ( lalloc_b_overhead_size + data_size ) );
+    LALLOC_DECLARE( test_alloc, blocks * ( lalloc_b_overhead_size + data_size ) );
 
     lalloc_init( &test_alloc );
 
@@ -258,8 +254,8 @@ void test_list_join()
     uint8_t *addr;
     LALLOC_IDX_TYPE size;
 
-    /* create 20 nodes, with dummy prev next indexes */
-    for ( i = 0; i < nodes; i++ )
+    /* create 20 blocks, with dummy prev next indexes */
+    for ( i = 0; i < blocks; i++ )
     {
         lalloc_alloc( &test_alloc, &addr, &size );
         lalloc_commit( &test_alloc, data_size );
@@ -267,11 +263,11 @@ void test_list_join()
         indexes[i] = addr - test_alloc.pool - lalloc_b_overhead_size;
     }
 
-    // remove the [1] node, then the [2] and join   //joins left
+    // remove the [1] block, then the [2] and join   //joins left
     lalloc_free( &test_alloc, addreses[1] );
     lalloc_free( &test_alloc, addreses[2] );
 
-    // free list must be the node indexes[1]
+    // free list must be the block indexes[1]
     _block_get_data( test_alloc.pool, indexes[1], &addr, &size );
 
     TEST_ASSERT_EQUAL( 2 * data_size + lalloc_b_overhead_size, size );
@@ -291,7 +287,7 @@ void test_list_join()
 
     _block_get_data( test_alloc.pool, indexes[5], &addr, &size );
     TEST_ASSERT_EQUAL( 3 * data_size + 2 * lalloc_b_overhead_size, size );
-    TEST_ASSERT_EQUAL( 3 * data_size + 2 * lalloc_b_overhead_size, lalloc_get_free_space( &test_alloc ) ); // gives the gratest node's size
+    TEST_ASSERT_EQUAL( 3 * data_size + 2 * lalloc_b_overhead_size, lalloc_get_free_space( &test_alloc ) ); // gives the gratest block's size
 
     // remove [4]
     lalloc_free( &test_alloc, addreses[4] );

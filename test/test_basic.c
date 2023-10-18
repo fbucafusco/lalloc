@@ -43,7 +43,7 @@ extern const LALLOC_IDX_TYPE lalloc_b_overhead_size;
 /**
    @brief WHITE BOX TEST
           TEST THE ALLOCATION COMMIT AND FREE OPERATIONS, AND VALIDATES THE INTEGRITY OF THE LIST AFTER THEM.
-          IT VALIDATES THE COALESCENSE ALGORITM FOR THE FREED NODES.
+          IT VALIDATES THE COALESCENSE ALGORITM FOR THE FREED BLOCKS.
  */
 void test_lalloc_1()
 {
@@ -64,7 +64,7 @@ void test_lalloc_1()
 
     for ( i = 0; i < 5; i++ )
     {
-        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_NODE_HEAD_SIZE;
+        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADED_SIZE;
     }
 
     LALLOC_DECLARE( test_alloc, pool_size );
@@ -86,10 +86,10 @@ void test_lalloc_1()
         TEST_ASSERT_TRUE( lalloc_sanity_check( &test_alloc ) );
     }
 
-    /* there shouldn't be any free node */
+    /* there shouldn't be any free block */
     TEST_ASSERT_EQUAL( LALLOC_IDX_INVALID, test_alloc.dyn->flist );
 
-    /* free 2 "middle" nodes */
+    /* free 2 "middle" blocks */
     lalloc_free( &test_alloc, addresses[2] );
     TEST_ASSERT_TRUE( lalloc_sanity_check( &test_alloc ) );
 
@@ -108,7 +108,7 @@ void test_lalloc_1()
     TEST_ASSERT_EQUAL( 0, size );
 
     /* COUNT THE FREE NDOES.
-     * During the lastest operations there were removed the "middle nodes"  so there must be a middle node "joined". Just 1 */
+     * During the lastest operations there were removed the "middle blocks"  so there must be a middle block "joined". Just 1 */
     _block_list_get_n( test_alloc.pool, test_alloc.dyn->flist, 0, &data, &size );
 
     TEST_ASSERT_EQUAL( LALLOC_ALIGN_ROUND_UP( strlen( text3 ) + strlen( text4 ) + lalloc_b_overhead_size ), size );
@@ -142,7 +142,7 @@ void test_lalloc_2()
 
     for ( i = 0; i < 5; i++ )
     {
-        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_NODE_HEAD_SIZE;
+        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADED_SIZE;
     }
 
     LALLOC_DECLARE( test_alloc, pool_size );
@@ -160,10 +160,10 @@ void test_lalloc_2()
         lalloc_commit( &test_alloc, strlen( text_arr[i] ) );
     }
 
-    /* there shouldn't be any free node */
+    /* there shouldn't be any free block */
     TEST_ASSERT_EQUAL( LALLOC_IDX_INVALID, test_alloc.dyn->flist );
 
-    /* free 2 "middle" nodes */
+    /* free 2 "middle" blocks */
     lalloc_free( &test_alloc, addresses[1] );
     lalloc_free( &test_alloc, addresses[3] );
     lalloc_free( &test_alloc, addresses[2] );
@@ -178,7 +178,7 @@ void test_lalloc_2()
     TEST_ASSERT_EQUAL( 0, size );
 
     /* COUNT THE FREE NDOES.
-     * During the lastest operations there were removed the "middle nodes"  so there must be a middle node "joined". Just 1 */
+     * During the lastest operations there were removed the "middle blocks"  so there must be a middle block "joined". Just 1 */
     _block_list_get_n( test_alloc.pool, test_alloc.dyn->flist, 0, &data, &size );
 
     TEST_ASSERT_EQUAL( LALLOC_ALIGN_ROUND_UP( strlen( text2 ) + strlen( text3 ) + strlen( text4 ) + 2 * lalloc_b_overhead_size ), size );
@@ -216,7 +216,7 @@ void test_lalloc_3a()
 
     for ( i = 0; i < 5; i++ )
     {
-        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_NODE_HEAD_SIZE;
+        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADED_SIZE;
     }
 
     LALLOC_DECLARE( test_alloc, pool_size );
@@ -234,10 +234,10 @@ void test_lalloc_3a()
         lalloc_commit( &test_alloc, strlen( text_arr[i] ) );
     }
 
-    /* there shouldn't be any free node */
+    /* there shouldn't be any free block */
     TEST_ASSERT_EQUAL( LALLOC_IDX_INVALID, test_alloc.dyn->flist );
 
-    /* free 2 "middle" nodes */
+    /* free 2 "middle" blocks */
     lalloc_free( &test_alloc, addresses[1] );
     lalloc_free( &test_alloc, addresses[3] );
     lalloc_free( &test_alloc, addresses[4] );
@@ -248,7 +248,7 @@ void test_lalloc_3a()
     TEST_ASSERT_EQUAL( LALLOC_IDX_INVALID, test_alloc.dyn->alist );
 
     /* COUNT THE FREE NDOES.
-     * During the lastest operations there were removed the all the nodes so there must be an only node "joined". Just 1 */
+     * During the lastest operations there were removed the all the blocks so there must be an only block "joined". Just 1 */
     _block_list_get_n( test_alloc.pool, test_alloc.dyn->flist, 0, &data, &size );
 
     TEST_ASSERT_EQUAL( LALLOC_ALIGN_ROUND_UP( test_alloc.size - lalloc_b_overhead_size ), size );
@@ -291,7 +291,7 @@ void test_lalloc_3b()
     /* exactly storage for the first 5 txts (without \0), the lastone wont fit */
     for ( i = 0; i < 5; i++ )
     {
-        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_NODE_HEAD_SIZE;
+        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADED_SIZE;
     }
 
     lalloc_t *test_alloc = lalloc_ctor( pool_size );
@@ -320,10 +320,10 @@ void test_lalloc_3b()
     TEST_ASSERT_EQUAL_PTR( addresses[2], data );
     TEST_ASSERT_EQUAL( size, strlen( text_arr[2] ) );
 
-    /* there shouldn't be any free node */
+    /* there shouldn't be any free block */
     TEST_ASSERT_EQUAL( LALLOC_IDX_INVALID, test_alloc->dyn->flist );
 
-    /* free 2 "middle" nodes */
+    /* free 2 "middle" blocks */
     lalloc_free( test_alloc, addresses[1] );
     lalloc_free( test_alloc, addresses[3] );
 
@@ -336,18 +336,18 @@ void test_lalloc_3b()
     lalloc_free( test_alloc, addresses[2] );
     lalloc_free( test_alloc, addresses[0] );
 
-    /* every node should have been deleted */
+    /* every block should have been deleted */
     TEST_ASSERT_EQUAL( 0, lalloc_get_alloc_count( test_alloc ) );
 
     /* ALIST is build as a LIFO and should be invalid */
     TEST_ASSERT_EQUAL( LALLOC_IDX_INVALID, test_alloc->dyn->alist );
 
-    /* COUNT THE FREE NODES.
+    /* COUNT THE FREE BLOCKS.
        During the lastest operations there were removed the all the
-       nodes so there must be an only node "joined". Just 1 */
+       blocks so there must be an only block "joined". Just 1 */
     _block_list_get_n( test_alloc->pool, test_alloc->dyn->flist, 0, &data, &size );
 
-    TEST_ASSERT_EQUAL( LALLOC_ALIGN_ROUND_UP( test_alloc->size - LALLOC_NODE_HEAD_SIZE ), size );
+    TEST_ASSERT_EQUAL( LALLOC_ALIGN_ROUND_UP( test_alloc->size - LALLOC_BLOCK_HEADED_SIZE ), size );
 
     _block_list_get_n( test_alloc->pool, test_alloc->dyn->flist, 1, &data, &size );
 
@@ -463,7 +463,7 @@ void test_lalloc_4b()
     TEST_ASSERT_EQUAL( elment_size + lalloc_b_overhead_size, test_alloc.dyn->alloc_block );
 }
 
-void test_lalloc_free_non_valid_node()
+void test_lalloc_free_non_valid_block()
 {
     uint8_t *data;
     LALLOC_IDX_TYPE size;
@@ -475,13 +475,13 @@ void test_lalloc_free_non_valid_node()
     lalloc_alloc( &test_alloc, ( void ** )&data, &size );
     lalloc_commit( &test_alloc, 10 );
 
-    /* try to destroy a node not belonging to the pool */
+    /* try to destroy a block not belonging to the pool */
     int res = lalloc_free( &test_alloc, &test_alloc_pool[test_alloc.size + 3] );
 
     TEST_ASSERT_EQUAL( false, res );
 }
 
-void test_lalloc_free_valid_nodes()
+void test_lalloc_free_valid_blocks()
 {
     uint8_t *data0;
     uint8_t *data1;
@@ -505,7 +505,7 @@ void test_lalloc_free_valid_nodes()
     lalloc_commit( &test_alloc, 10 );
 
     int res;
-    /* try to destroy a node not belonging to the pool */
+    /* try to destroy a block not belonging to the pool */
 
 #if LALLOC_ALLOW_QUEUED_FREES == 1
     res = lalloc_free_first( &test_alloc );
@@ -620,8 +620,8 @@ int main()
     RUN_TEST( test_lalloc_3b );
     RUN_TEST( test_lalloc_4a );
     RUN_TEST( test_lalloc_4b );
-    RUN_TEST( test_lalloc_free_non_valid_node );
-    RUN_TEST( test_lalloc_free_valid_nodes );
+    RUN_TEST( test_lalloc_free_non_valid_block );
+    RUN_TEST( test_lalloc_free_valid_blocks );
     RUN_TEST( test_lalloc_commit_without_alloc );
     RUN_TEST( test_lalloc_ctor_fails );
     return 0;

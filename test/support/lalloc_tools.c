@@ -7,6 +7,7 @@ extern const LALLOC_IDX_TYPE lalloc_b_overhead_size;
 
 LALLOC_INLINE LALLOC_IDX_TYPE _block_get_next_phy( uint8_t *pool, LALLOC_IDX_TYPE block_idx );
 
+
 /* TEST PURPOSES ONLY
    It saves data into the data field of the block  */
 void _block_set_data( uint8_t *pool, LALLOC_IDX_TYPE block_idx, uint8_t *addr, LALLOC_IDX_TYPE size )
@@ -43,10 +44,10 @@ void lalloc_measure_framgentation( LALLOC_T *obj, float *sqbase, float *average_
 
     LALLOC_CRITICAL_START;
 
-    LALLOC_IDX_TYPE node = obj->dyn->flist;
+    LALLOC_IDX_TYPE block = obj->dyn->flist;
 
-    /* Take the flist element (the first) and return your information, and remove the flist node. */
-    if ( LALLOC_IDX_INVALID != node )
+    /* Take the flist element (the first) and return your information, and remove the flist block. */
+    if ( LALLOC_IDX_INVALID != block )
     {
         n = 0;
 
@@ -54,17 +55,14 @@ void lalloc_measure_framgentation( LALLOC_T *obj, float *sqbase, float *average_
         {
             LALLOC_IDX_TYPE size;
 
-            // LALLOC_GET_BLOCK_SIZE( obj->pool, node, size );
-            // size &= ~LALLOC_FREE_NODE_MASK;
-
-            size = _block_get_size( obj->pool, node );
+            size = _block_get_size( obj->pool, block );
 
             sum += size;
             sum2 += size * size;
             n++;
 
-            LALLOC_GET_BLOCK_NEXT( obj->pool, node, node );
-            if ( node == obj->dyn->flist )
+            LALLOC_GET_BLOCK_NEXT( obj->pool, block, block );
+            if ( block == obj->dyn->flist )
             {
                 break;
             }
@@ -80,7 +78,7 @@ void lalloc_measure_framgentation( LALLOC_T *obj, float *sqbase, float *average_
     }
     else
     {
-        /* there isn't any node in the list  */
+        /* there isn't any block in the list  */
         *sqbase = 0.0;
         *average_based = 0.0;
     }
@@ -99,7 +97,7 @@ void lalloc_print_metrics( LALLOC_T *obj )
 }
 
 /**
-   @brief Prints in stdout a ASCII representation of the nodes in the pool.
+   @brief Prints in stdout a ASCII representation of the blocks in the pool.
           TESTS PURPOSES ONLY
    @param obj
 
@@ -111,21 +109,18 @@ void lalloc_print_graph( LALLOC_T *obj, char last, uint32_t scale )
     char b[pool_size_ + 2];
     memset( b, 'F', pool_size_ );
 
-    LALLOC_IDX_TYPE node = 0;
+    LALLOC_IDX_TYPE block = 0;
     // LALLOC_IDX_TYPE n = 0;
     LALLOC_IDX_TYPE idx = 0;
     LALLOC_IDX_TYPE next_phy;
     LALLOC_IDX_TYPE block_size;
     char c = 'A';
 
-    if ( LALLOC_IDX_INVALID != node )
+    if ( LALLOC_IDX_INVALID != block )
     {
         while ( 1 )
         {
             next_phy = _block_get_next_phy( obj->pool, idx );
-
-            // LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, idx,  );
-            // LALLOC_GET_BLOCK_SIZE( obj->pool, idx, block_size );
 
             bool is_free = _block_is_free( obj->pool, idx );
 
@@ -144,9 +139,6 @@ void lalloc_print_graph( LALLOC_T *obj, char last, uint32_t scale )
                     c = 'A'; // allocated
                 }
             }
-
-            /* clear free node flag */
-            // block_size &= ~LALLOC_FREE_NODE_MASK;
 
             block_size = _block_get_size( obj->pool, idx );
 
@@ -170,8 +162,7 @@ void lalloc_print_graph( LALLOC_T *obj, char last, uint32_t scale )
                 break;
             }
 
-            /* if the next_phy block is not higher than the current idx,
-               is an error */
+            /* if the next_phy block is not higher than the current idx, is an error */
             if ( !( next_phy > idx ) )
             {
                 exit( -2 ); // stops execution because an error occurred
@@ -226,11 +217,6 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
     {
         // LALLOC_GET_BLOCK_NEXTPHYS( obj->pool, idx, next_phy );
         next_phy = _block_get_next_phy( obj->pool, idx );
-
-        // LALLOC_GET_BLOCK_SIZE( obj->pool, idx, size );
-
-        // /* clear free node flag */
-        // size &= ~LALLOC_FREE_NODE_MASK;
         size = _block_get_size( obj->pool, idx );
 
         size_sum += size;
@@ -318,7 +304,7 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
     /* 2nd stage: move through the lists in both directions.  TODO */
     LALLOC_CRITICAL_END;
 
-    // the flist has the decreasing sizes of nodes
+    // 3rd stage the flist has the decreasing sizes of blocks
     LALLOC_IDX_TYPE start = obj->dyn->flist;
     LALLOC_IDX_TYPE prev_size;
 
@@ -326,9 +312,6 @@ LALLOC_IDX_TYPE lalloc_sanity_check( LALLOC_T *obj )
     {
         while ( 1 )
         {
-            // LALLOC_GET_BLOCK_SIZE( obj->pool, start, size );
-            // size &= ~LALLOC_FREE_NODE_MASK;
-
             size = _block_get_size( obj->pool, start );
 
             if ( start == obj->dyn->flist )

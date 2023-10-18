@@ -98,7 +98,7 @@ extern "C" {
 #define LALLOC_BLOCK_FIELD_OFFSET_SIZE                offsetof(lalloc_block_t , blk_size)
 #define LALLOC_NEXT_BLOCK_IDX(idx,size)               ((idx)+(size)+lalloc_b_overhead_size)
 
-#define LALLOC_NODE_HEAD_SIZE                         LALLOC_ALIGN_ROUND_UP( sizeof(lalloc_block_t) )
+#define LALLOC_BLOCK_HEADED_SIZE                         LALLOC_ALIGN_ROUND_UP( sizeof(lalloc_block_t) )
 
 #define LALLOC_BLOCK(POOL, INDEX)                     ( ( lalloc_block_t* ) &(POOL)[(INDEX)] )
 #define LALLOC_BLOCK_DATA(POOL, INDEX)                &(POOL)[(INDEX+lalloc_b_overhead_size)]
@@ -107,7 +107,6 @@ extern "C" {
 #define LALLOC_BLOCK_NEXT(POOL, INDEX)                ( LALLOC_BLOCK(POOL, INDEX)->next )
 #define LALLOC_BLOCK_PREV(POOL, INDEX)                ( LALLOC_BLOCK(POOL, INDEX)->prev )
 
-//#define LALLOC_BLOCK_NEXTPHYS(POOL, INDEX)            LALLOC_NEXT_BLOCK_IDX(INDEX, LALLOC_BLOCK_SIZE(POOL, INDEX) & ~LALLOC_FREE_NODE_MASK )
 #define LALLOC_BLOCK_PREVPHYS(POOL, INDEX)            ( LALLOC_BLOCK(POOL, INDEX)->prev_phys )
 #define LALLOC_BLOCK_PAYLOAD_REF(INDEX)               ( &obj->pool[(INDEX) + lalloc_b_overhead_size] )
 #define LALLOC_NEXT_BLOCK_INDEX_TEST(POOL,INDEX)      ( LALLOC_BLOCK(POOL, INDEX)->next )
@@ -118,7 +117,6 @@ extern "C" {
 #define LALLOC_GET_BLOCK_FLAGS(POOL,INDEX, SIZE)       (SIZE) = LALLOC_BLOCK_FLAGS( (POOL), (INDEX) )
 #define LALLOC_GET_BLOCK_NEXT(POOL,INDEX, NEXT)       (NEXT) = LALLOC_BLOCK_NEXT( (POOL), (INDEX) )
 #define LALLOC_GET_BLOCK_PREV(POOL,INDEX, PREV)       (PREV) = LALLOC_BLOCK_PREV(POOL,INDEX);
-//#define LALLOC_GET_BLOCK_NEXTPHYS(POOL, INDEX, NEXT)  (NEXT) = LALLOC_BLOCK_NEXTPHYS(POOL,INDEX);
 #define LALLOC_GET_BLOCK_PREVPHYS(POOL, INDEX, PREV)  (PREV) = LALLOC_BLOCK_PREVPHYS(POOL,INDEX);
 #define LALLOC_SET_BLOCK_SIZE(POOL,INDEX, SIZE)       LALLOC_BLOCK_SIZE( (POOL), (INDEX) ) = (SIZE)
 #define LALLOC_SET_BLOCK_FLAGS(POOL,INDEX, SIZE)      LALLOC_BLOCK_FLAGS( (POOL), (INDEX) ) = (SIZE)
@@ -143,12 +141,12 @@ typedef struct
 #pragma pack()
 
 /**
-   @brief   LALLOC_FREE_NODE_MASK
+   @brief   LALLOC_FREE_BLOCK_MASK
             defines the bit within the blk_size field of lalloc_block_t that will mark the block as free
             NOTE: this is done for avoiding move through the free list when joining free nodes.
  */
-#define LALLOC_FREE_NODE_MASK       1
-#define LALLOC_USED_NODE_MASK       0
+#define LALLOC_FREE_BLOCK_MASK       1
+#define LALLOC_USED_BLOCK_MASK       0
 
 /* private functions exposed to tests */
 void _block_list_add_first ( uint8_t* pool, LALLOC_IDX_TYPE* list_idx, LALLOC_IDX_TYPE block_idx );
@@ -162,3 +160,5 @@ LALLOC_IDX_TYPE _block_remove( uint8_t *pool, LALLOC_IDX_TYPE *idx );
 #ifdef __cplusplus
 }
 #endif
+
+/* v0.30 */
