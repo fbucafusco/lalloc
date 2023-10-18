@@ -64,7 +64,7 @@ void test_lalloc_1()
 
     for ( i = 0; i < 5; i++ )
     {
-        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADED_SIZE;
+        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADER_SIZE;
     }
 
     LALLOC_DECLARE( test_alloc, pool_size );
@@ -142,7 +142,7 @@ void test_lalloc_2()
 
     for ( i = 0; i < 5; i++ )
     {
-        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADED_SIZE;
+        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADER_SIZE;
     }
 
     LALLOC_DECLARE( test_alloc, pool_size );
@@ -216,7 +216,7 @@ void test_lalloc_3a()
 
     for ( i = 0; i < 5; i++ )
     {
-        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADED_SIZE;
+        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADER_SIZE;
     }
 
     LALLOC_DECLARE( test_alloc, pool_size );
@@ -291,7 +291,7 @@ void test_lalloc_3b()
     /* exactly storage for the first 5 txts (without \0), the lastone wont fit */
     for ( i = 0; i < 5; i++ )
     {
-        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADED_SIZE;
+        pool_size += LALLOC_ALIGN_ROUND_UP( size_arr[i] ) + LALLOC_BLOCK_HEADER_SIZE;
     }
 
     lalloc_t *test_alloc = lalloc_ctor( pool_size );
@@ -347,7 +347,7 @@ void test_lalloc_3b()
        blocks so there must be an only block "joined". Just 1 */
     _block_list_get_n( test_alloc->pool, test_alloc->dyn->flist, 0, &data, &size );
 
-    TEST_ASSERT_EQUAL( LALLOC_ALIGN_ROUND_UP( test_alloc->size - LALLOC_BLOCK_HEADED_SIZE ), size );
+    TEST_ASSERT_EQUAL( LALLOC_ALIGN_ROUND_UP( test_alloc->size - LALLOC_BLOCK_HEADER_SIZE ), size );
 
     _block_list_get_n( test_alloc->pool, test_alloc->dyn->flist, 1, &data, &size );
 

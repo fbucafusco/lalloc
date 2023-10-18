@@ -24,7 +24,7 @@ TESTS= test1 test2 test3 test4 test5 test6 test7
 SRC_FILES_T1	+=$(TESTS_BASE_PATH)test_basic.c
 SRC_FILES_T1	+=$(TESTS_BASE_PATH)support/lalloc_tools.c
 INC_FILES_T1	=
-CFLAGS_T1		=
+CFLAGS_T1		= -DLALLOC_ALIGNMENT=1 -DLALLOC_MAX_BYTES=0xFFFF
 
 #TEST2
 SRC_FILES_T2	+=$(TESTS_BASE_PATH)test_list.c
@@ -39,31 +39,24 @@ SRC_FILES_T3	+=$(TESTS_BASE_PATH)support/random_tools.c
 INC_FILES_T3	=
 CFLAGS_T3		=
 
-#TEST4TEST3withoutdefaults
-SRC_FILES_T4	+=$(TESTS_BASE_PATH)test_random.c
-SRC_FILES_T4	+=$(TESTS_BASE_PATH)support/lalloc_tools.c
-SRC_FILES_T4	+=$(TESTS_BASE_PATH)support/random_tools.c
+#TEST4 			TEST3 without defaults
+SRC_FILES_T4	+=$(SRC_FILES_T3) 
 INC_FILES_T4	=
 CFLAGS_T4		= -DLALLOC_ALIGNMENT=4 -DLALLOC_MAX_BYTES=0xFFFFFFFF
 
-#TEST5			defaultLALLOC_ALIGNMENT&LALLOC_MAX_BYTES
+#TEST5			default LALLOC_ALIGNMENT&LALLOC_MAX_BYTES
 SRC_FILES_T5	+=$(TESTS_BASE_PATH)test_random_2.c
 SRC_FILES_T5	+=$(TESTS_BASE_PATH)support/lalloc_tools.c
 SRC_FILES_T5	+=$(TESTS_BASE_PATH)support/random_tools.c
 INC_FILES_T5	=
 CFLAGS_T5		=
 
-#TEST6			TEST5withoutdefaults
-SRC_FILES_T6	+=$(TESTS_BASE_PATH)test_random_2.c
-SRC_FILES_T6	+=$(TESTS_BASE_PATH)support/lalloc_tools.c
-SRC_FILES_T6	+=$(TESTS_BASE_PATH)support/random_tools.c
+#TEST6			TEST5 without defaults
+SRC_FILES_T6	+=$(SRC_FILES_T5)  
 INC_FILES_T6	=
 CFLAGS_T6		=-DLALLOC_ALIGNMENT=4 -DLALLOC_MAX_BYTES=0xFFFFFFFF
 
-
-#TEST7			TEST5withoutdefaults
-SRC_FILES_T7	+=$(TESTS_BASE_PATH)test_random_2.c
-SRC_FILES_T7	+=$(TESTS_BASE_PATH)support/lalloc_tools.c
-SRC_FILES_T7	+=$(TESTS_BASE_PATH)support/random_tools.c
+#TEST7			TEST5 without defaults
+SRC_FILES_T7	+=$(SRC_FILES_T5) 
 INC_FILES_T7	=
 CFLAGS_T7		=-DLALLOC_ALIGNMENT=1 -DLALLOC_MAX_BYTES=0xFF

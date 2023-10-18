@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* CONSTANTS ============================================================================================================ */
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_alignment = LALLOC_ALIGNMENT;
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_invalid_index = LALLOC_IDX_INVALID;
-LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_b_overhead_size = LALLOC_BLOCK_HEADED_SIZE;
+LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_b_overhead_size = LALLOC_BLOCK_HEADER_SIZE;
 
 #ifndef LALLOC_INLINE
 #define LALLOC_INLINE inline
