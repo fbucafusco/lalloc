@@ -87,19 +87,19 @@ void test_list_related_2()
 
     /* 20 first */
     added = 20;
-    _block_list_add_first( test_alloc.pool, &( test_alloc.dyn->flist ), added );
+    _block_list_add_before( test_alloc.pool, &( test_alloc.dyn->flist ), added );
 
     TEST_ASSERT_EQUAL_INT( 20, test_alloc.dyn->flist );
 
     /* 0 second */
     added = 0;
-    _block_list_add_first( test_alloc.pool, &( test_alloc.dyn->flist ), added );
+    _block_list_add_before( test_alloc.pool, &( test_alloc.dyn->flist ), added );
 
     TEST_ASSERT_EQUAL_INT( 0, test_alloc.dyn->flist );
 
     /* 36 third  */
     added = 40;
-    _block_list_add_first( test_alloc.pool, &( test_alloc.dyn->flist ), added );
+    _block_list_add_before( test_alloc.pool, &( test_alloc.dyn->flist ), added );
 
     TEST_ASSERT_EQUAL_INT( 40, test_alloc.dyn->flist );
 

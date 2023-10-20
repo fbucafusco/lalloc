@@ -39,9 +39,7 @@ LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_alignment = LALLOC_ALIGNMENT;
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_invalid_index = LALLOC_IDX_INVALID;
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_b_overhead_size = LALLOC_BLOCK_HEADER_SIZE;
 
-#ifndef LALLOC_INLINE
-#define LALLOC_INLINE inline
-#endif
+
 
 /* ==PRIVATE METHODS================================================================================= */
 
@@ -117,9 +115,16 @@ LALLOC_INLINE void _block_set_size( uint8_t *pool, LALLOC_IDX_TYPE block_idx, LA
     LALLOC_SET_BLOCK_SIZE( pool, block_idx, size );
 }
 
+LALLOC_INLINE LALLOC_IDX_TYPE _block_get_prev_phy( uint8_t *pool, LALLOC_IDX_TYPE block_idx )
+{
+    LALLOC_IDX_TYPE prev_phy;
+    LALLOC_GET_BLOCK_PREVPHYS( pool, block_idx, prev_phy );
+    return prev_phy;
+}
+
 LALLOC_INLINE LALLOC_IDX_TYPE _block_get_next_phy( uint8_t *pool, LALLOC_IDX_TYPE block_idx )
 {
-    return  LALLOC_NEXT_BLOCK_IDX( block_idx, _block_get_size( pool, block_idx ) );
+    return LALLOC_NEXT_BLOCK_IDX( block_idx, _block_get_size( pool, block_idx ) );
 }
 
 /**
@@ -139,6 +144,7 @@ LALLOC_INLINE void _block_set_flags( uint8_t *pool, LALLOC_IDX_TYPE block_idx, L
 #else
     LALLOC_IDX_TYPE size;
     LALLOC_GET_BLOCK_SIZE( pool, block_idx, size );
+    size &= ~LALLOC_FREE_BLOCK_MASK;
     LALLOC_SET_BLOCK_SIZE( pool, block_idx, size | newflags );
 #endif
 }
@@ -175,10 +181,10 @@ LALLOC_IDX_TYPE _block_remove( uint8_t *pool, LALLOC_IDX_TYPE *idx )
     LALLOC_IDX_TYPE next;
     LALLOC_IDX_TYPE prev;
 
+    LALLOC_ASSERT( ( *idx ) != LALLOC_IDX_INVALID );
+
     LALLOC_GET_BLOCK_NEXT( pool, ( *idx ), next );
     LALLOC_GET_BLOCK_PREV( pool, ( *idx ), prev );
-
-    LALLOC_ASSERT( ( *idx ) != LALLOC_IDX_INVALID );
 
     /* backup */
     LALLOC_IDX_TYPE orphan_idx = ( *idx );
@@ -254,7 +260,7 @@ LALLOC_IDX_TYPE _block_list_find_by_idx( uint8_t *pool, LALLOC_IDX_TYPE list, LA
 }
 
 /**
-   @brief   finds a block in a list by payload reference.
+   @brief   finds a block in a NON EMPTY list by payload reference.
             returns the found relative block index or LALLOC_IDX_INVALID if not found
             If found, it returns the index block whos payload contains the provided reference
 
@@ -359,7 +365,7 @@ void _block_list_get_n( uint8_t *pool, LALLOC_IDX_TYPE list, LALLOC_IDX_TYPE n, 
    @param list_idx
    @param block_idx
 */
-void _block_list_add_first( uint8_t *pool, LALLOC_IDX_TYPE *list_idx, LALLOC_IDX_TYPE block_idx )
+void _block_list_add_before( uint8_t *pool, LALLOC_IDX_TYPE *list_idx, LALLOC_IDX_TYPE block_idx )
 {
     LALLOC_IDX_TYPE prev;
     LALLOC_ASSERT( block_idx != LALLOC_IDX_INVALID );
@@ -402,7 +408,7 @@ void _block_list_add_sorted( uint8_t *pool, LALLOC_IDX_TYPE *list_idx, LALLOC_ID
     if ( LALLOC_IDX_INVALID == current )
     {
         /* if the list is empty, the block is the first */
-        _block_list_add_first( pool, &current, block_idx );
+        _block_list_add_before( pool, &current, block_idx );
         *list_idx = current;
     }
     else
@@ -431,7 +437,7 @@ void _block_list_add_sorted( uint8_t *pool, LALLOC_IDX_TYPE *list_idx, LALLOC_ID
             }
         }
 
-        _block_list_add_first( pool, &current, block_idx );
+        _block_list_add_before( pool, &current, block_idx );
 
         if ( current == *list_idx )
         {
@@ -480,7 +486,11 @@ LALLOC_IDX_TYPE _block_list_remove_block( uint8_t *pool, LALLOC_IDX_TYPE *list, 
 }
 
 /**
-    @brief joins two adjacent blocks if both of them are free.
+    @brief  Given a orphan node (a block that is not in any list)
+            this function joins it with its physical and previous physical adjacent blocks if they are free.
+            Since this block will end up being in a free list, and the adjacent blocks are free,
+            the blocks are trated as part of the list.
+
         it returns the resultant block, with all the header updated.
         this is an internal method for lalloc operation
         NOT THREAD SAFE
@@ -493,8 +503,8 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE orphan_bloc
 {
     LALLOC_IDX_TYPE prev_phy;
     LALLOC_IDX_TYPE next_phy;
-    LALLOC_GET_BLOCK_PREVPHYS( obj->pool, orphan_block, prev_phy );
 
+    prev_phy = _block_get_prev_phy( obj->pool, orphan_block );
     next_phy = _block_get_next_phy( obj->pool, orphan_block );
 
     /*
@@ -544,7 +554,7 @@ LALLOC_IDX_TYPE _block_join_adjacent( LALLOC_T *obj, LALLOC_IDX_TYPE orphan_bloc
     }
 
     /* repair the previous physical of the next. */
-    if ( obj->size != next_phy )
+    if ( next_phy != obj->size )
     {
         LALLOC_SET_BLOCK_PREVPHYS( obj->pool, next_phy, orphan_block );
     }
@@ -610,7 +620,6 @@ void *lalloc_ctor( LALLOC_IDX_TYPE size )
     if ( rv != NULL )
     {
         rv->size = size;
-        // rv->size = LALLOC_ADJUST_SIZE_WITH_MASK( size );
 
         rv->pool = ( uint8_t * )malloc( rv->size );
         // rv->pool = ( uint8_t * ) aligned_alloc( LALLOC_ALIGNMENT , rv->size );
@@ -635,10 +644,6 @@ void *lalloc_ctor( LALLOC_IDX_TYPE size )
             free( rv );
             rv = NULL;
         }
-    }
-    else
-    {
-        // marker
     }
 
     return rv;
@@ -729,7 +734,6 @@ void lalloc_alloc_revert( LALLOC_T *obj )
 {
     LALLOC_CRITICAL_START;
 
-    // LALLOC_IDX_TYPE size;
     if ( obj->dyn->flist != LALLOC_IDX_INVALID )
     {
         _block_set_flags( obj->pool, obj->dyn->flist, LALLOC_FREE_BLOCK_MASK );
@@ -762,7 +766,6 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
 
         if ( obj->dyn->alloc_block != LALLOC_IDX_INVALID )
         {
-            LALLOC_IDX_TYPE next_physical;
             LALLOC_IDX_TYPE block_size;
 
             /* SIZE VALIDATION */
@@ -799,12 +802,12 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
                 _block_set_flags( obj->pool, orphan_idx, LALLOC_USED_BLOCK_MASK );
 
                 /* add the block to allocated list */
-                _block_list_add_first( obj->pool, &( obj->dyn->alist ), orphan_idx );
+                _block_list_add_before( obj->pool, &( obj->dyn->alist ), orphan_idx );
 
                 if ( split_block )
                 {
                     /* the bigblock must be splitted */
-                    LALLOC_IDX_TYPE new_block_idx = orphan_idx + size + lalloc_b_overhead_size;
+                    LALLOC_IDX_TYPE new_block_idx = LALLOC_NEXT_BLOCK_IDX( orphan_idx , size );
 
                     /* You have to separate the block, and insert the new */
                     new_block_size = new_block_size - lalloc_b_overhead_size;
@@ -814,7 +817,7 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
                     _block_set_flags( obj->pool, new_block_idx, LALLOC_FREE_BLOCK_MASK );
 
                     /* next physical to the new block */
-                    next_physical = _block_get_next_phy( obj->pool, new_block_idx );
+                    LALLOC_IDX_TYPE next_physical = _block_get_next_phy( obj->pool, new_block_idx );
 
                     /* set the previous phy to the new block */
                     LALLOC_SET_BLOCK_PREVPHYS( obj->pool, new_block_idx, orphan_idx );
@@ -1050,4 +1053,4 @@ void lalloc_get_n( LALLOC_T *obj, void **addr, LALLOC_IDX_TYPE *size, LALLOC_IDX
     LALLOC_CRITICAL_END;
 }
 
-/* v0.30 */
+/* v1.00 */

@@ -77,6 +77,10 @@ extern "C" {
 #endif
 
 
+#ifndef LALLOC_INLINE
+#define LALLOC_INLINE inline
+#endif
+
 /* ==PRIVATE MACROS==CONDITIONAL===================================================================== */
 #ifndef LALLOC_CRITICAL_START
 #define LALLOC_CRITICAL_START
@@ -143,7 +147,7 @@ typedef struct
 #define LALLOC_USED_BLOCK_MASK       0
 
 /* private functions exposed to tests */
-void _block_list_add_first ( uint8_t* pool, LALLOC_IDX_TYPE* list_idx, LALLOC_IDX_TYPE block_idx );
+void _block_list_add_before ( uint8_t* pool, LALLOC_IDX_TYPE* list_idx, LALLOC_IDX_TYPE block_idx );
 void _block_set_data ( uint8_t* pool, LALLOC_IDX_TYPE  block_idx, uint8_t* addr, LALLOC_IDX_TYPE size );
 void _block_list_add_sorted ( uint8_t* pool, LALLOC_IDX_TYPE* list_idx, LALLOC_IDX_TYPE block_idx );
 void _block_list_get_n ( uint8_t* pool, LALLOC_IDX_TYPE list_idx,  LALLOC_IDX_TYPE n, uint8_t** addr, LALLOC_IDX_TYPE* size );
@@ -156,4 +160,4 @@ LALLOC_INLINE LALLOC_IDX_TYPE _block_get_next_phy( uint8_t *pool, LALLOC_IDX_TYP
 }
 #endif
 
-/* v0.30 */
+/* v1.00 */

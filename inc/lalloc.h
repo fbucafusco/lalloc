@@ -44,7 +44,7 @@ extern "C" {
 /* Project dependant configuration : the user should create this file in its project */
 #include "lalloc_config.h"
 
-#define LALLOC_VERSION           030
+#define LALLOC_VERSION           100
 
 /* DEFAULT VALUES: can be changed in  lalloc_config.h =========================================================================== */
 
@@ -111,6 +111,10 @@ extern "C" {
 #define LALLOC_IDX_INVALID              ((LALLOC_IDX_TYPE)(~((LALLOC_IDX_TYPE)0)))
 
 #if LALLOC_ALIGNMENT==1
+/* alignment 1 is meant to be used on 8 bit architectures and, most likely, in platforms with
+   small amout of ram only in conjuntion with LALLOC_MAX_BYTES<=0xFF.
+   If you need more bytes in the pool use LALLOC_ALIGNMENT==2 instead, because it will avoid using more
+   memory per allocated block */
 #define LALLOC_ALIGN_TYPE                uint8_t
 #elif LALLOC_ALIGNMENT==2
 #define LALLOC_ALIGN_TYPE                uint16_t
@@ -170,10 +174,6 @@ typedef struct
 #define LALLOC_T LALLOC_CONST_OBJ_ATTRIBUTES lalloc_t
 #endif
 
-#define ASSERT_CONCAT_(a, b) a##b
-#define ASSERT_CONCAT(a, b) ASSERT_CONCAT_(a, b)
-#define ct_assert(e) enum { ASSERT_CONCAT(assert_line_, __LINE__) = 1/(!!(e)) }
-
 /**
    @brief declares a static object that can be declared in any scope of execution
  */
@@ -215,6 +215,6 @@ void lalloc_dtor( void* this_ );
 
 
 
-/* v0.30 */
+/* v1.00 */
 
 
