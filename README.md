@@ -80,3 +80,8 @@ LALLOC was designed to:
 Unlike traditional methods, such as using malloc, memory blocks, or ping-pong buffers, LALLOC eliminates the need to know the maximum packet size in advance. In these traditional methods, the driver must allocate memory for the worst-case scenario, which can lead to inefficiencies. For instance, with memory blocks, if you want to store N incoming packets, you need a pool of at least N times the maximum packet size, even if the actual packets are much smaller.
 
 Furthermore, LALLOC includes a built-in FIFO algorithm, whereas other methods would require an additional implementation to manage the order of packet processing. This integration simplifies the design and enhances the efficiency of the memory allocation process.
+
+## License
+
+This project is licensed under the terms of the BSD 3-Clause License. For more details, please see the [LICENSE](./LICENSE) file.
+

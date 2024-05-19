@@ -1,7 +1,7 @@
 /*
 BSD 3-Clause License
 
-Copyright (c) 2018, Franco Bucafusco
+Copyright (c) 2024, Franco Bucafusco
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,7 @@ extern "C" {
 /* ==PRIVATE MACROS==CONFIGURATION===================================================================== */
 /**
    @brief LALLOC_FREE_ANY
+          The user can define it in lalloc_config.h
           Defines the behavior of lalloc_free.
           1:  addr field could be ANY address of memory granted to the user with a range from  the start or the block to start + committed size.
               Is handy when a pointer to an allocated space is passed to other layer of processing
