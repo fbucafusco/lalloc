@@ -39,8 +39,6 @@ LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_alignment = LALLOC_ALIGNMENT;
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_invalid_index = LALLOC_IDX_INVALID;
 LALLOC_STATIC const LALLOC_IDX_TYPE lalloc_b_overhead_size = LALLOC_BLOCK_HEADER_SIZE;
 
-
-
 /* ==PRIVATE METHODS================================================================================= */
 
 /**
@@ -226,7 +224,6 @@ LALLOC_IDX_TYPE _block_remove( uint8_t *pool, LALLOC_IDX_TYPE *idx )
 */
 LALLOC_IDX_TYPE _block_list_find_by_idx( uint8_t *pool, LALLOC_IDX_TYPE list, LALLOC_IDX_TYPE idx )
 {
-    // LALLOC_IDX_TYPE size;
     LALLOC_IDX_TYPE next = list;
 
     while ( 1 )
@@ -238,8 +235,6 @@ LALLOC_IDX_TYPE _block_list_find_by_idx( uint8_t *pool, LALLOC_IDX_TYPE list, LA
         if ( condition )
         {
             /* get the block size in order to compute the top boundry */
-            // size = _block_get_size( pool, next );
-
             condition = ( idx < _block_get_next_phy( pool, next ) );
         }
 
@@ -828,8 +823,9 @@ bool lalloc_commit( LALLOC_T *obj, LALLOC_IDX_TYPE size )
                         LALLOC_SET_BLOCK_PREVPHYS( obj->pool, next_physical, new_block_idx );
                     }
 
-                    /* This operation only make sense if the user must to alloc then free blocks before commiting the allocated space. */
+#if LALLOC_ALLOW_JOINING_WHEN_COMMITTING==1
                     new_block_idx = _block_join_adjacent( obj, new_block_idx );
+#endif
 
                     /* add the block to free list */
                     _block_list_add_sorted( obj->pool, &( obj->dyn->flist ), new_block_idx );

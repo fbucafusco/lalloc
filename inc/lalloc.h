@@ -68,6 +68,19 @@ extern "C" {
 #define LALLOC_MAX_BYTES         0xFFFF
 #endif
 
+/**
+    @brief When commiting an allocated space, the commited block might be splitted.  
+           At its left will have an allocated block and at its right may have a free block or not.
+           It might have a free block if a lalloc_free operation occured before the commit operation, and the freed block was
+           the adjacent to this new splitted block. 
+           
+           1: the join operation will happen on every lalloc_commit call.
+           0: the join operation wont happen when lalloc_commit is called.
+*/
+#ifndef LALLOC_ALLOW_JOINING_WHEN_COMMITTING
+#define LALLOC_ALLOW_JOINING_WHEN_COMMITTING    1  
+#endif
+
 /* CONDITIONALS ========================================================================================================== */
 
 /**
@@ -93,7 +106,7 @@ extern "C" {
 
 /**
    @brief   Based on LALLOC_MAX_BYTES it defines the data type for the indexing of bytes and blocks
- */
+*/
 #if defined(LALLOC_MAX_BYTES) && !defined(LALLOC_IDX_TYPE)
 #if( LALLOC_MAX_BYTES<=0xFF )
 #define LALLOC_IDX_TYPE                uint8_t
@@ -129,7 +142,7 @@ extern "C" {
 /**
    @brief   LALLOC_SIZE_ROUND_UP
             rounds up the size to the next multiple of the size of the type passed as parameter
- */
+*/
 #define LALLOC_SIZE_ROUND_UP( TYPE, SIZE) ((sizeof(TYPE) == 1) ? (SIZE) : ( (SIZE) + (sizeof(TYPE) - 1) ) & ~(sizeof(TYPE) - 1))
 
 /**

@@ -77,7 +77,6 @@ extern "C" {
 #define LALLOC_MIN_PAYLOAD_SIZE             0
 #endif
 
-
 #ifndef LALLOC_INLINE
 #define LALLOC_INLINE inline
 #endif
